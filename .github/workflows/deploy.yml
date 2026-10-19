@@ -50,7 +50,7 @@ jobs:
           version: latest
 
       - name: Vincular projeto Supabase
-        run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+        run: supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD"
 
       - name: Aplicar migrations
         run: supabase db push --password "$SUPABASE_DB_PASSWORD"
