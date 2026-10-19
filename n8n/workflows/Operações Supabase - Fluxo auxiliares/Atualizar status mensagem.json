@@ -95,12 +95,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"set_contexto\"\n}",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE_Elo }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE_Elo }}\",\n  \"p_scope\": \"set_contexto\"\n}",
         "options": {
           "response": {
             "response": {
@@ -128,7 +128,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_set_contexto_sessao\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_set_contexto_sessao\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
@@ -174,7 +174,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_atualizar_conversa\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_atualizar_conversa\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,

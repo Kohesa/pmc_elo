@@ -103,13 +103,13 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_CHATWOOT_BASE_URL || '').replace(/\\/+$/, '') + '/api/v1/accounts/' + String($('When Executed by Another Workflow').first().json.account_id) + '/conversations/' + String($('When Executed by Another Workflow').first().json.conversation_id) + '/messages' }}",
+        "url": "={{ ($env.N8N_CHATWOOT_BASE_URL_Elo || '').replace(/\\/+$/, '') + '/api/v1/accounts/' + String($('When Executed by Another Workflow').first().json.account_id) + '/conversations/' + String($('When Executed by Another Workflow').first().json.conversation_id) + '/messages' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "api_access_token",
-              "value": "={{ $env.N8N_CHATWOOT_API_TOKEN }}"
+              "value": "={{ $env.N8N_CHATWOOT_API_TOKEN_Elo }}"
             },
             {
               "name": "Content-Type",

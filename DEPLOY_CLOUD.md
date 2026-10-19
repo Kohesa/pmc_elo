@@ -36,7 +36,8 @@ Arquivo: `.github/workflows/deploy.yml`
 
 Arquivo: `.github/workflows/deploy-n8n.yml`
 
-- executa em push para `homolog` ou `master` quando há alteração nos workflows;
+- o gatilho automático por push está temporariamente comentado;
+- enquanto estiver desabilitado, o deploy só pode ser iniciado manualmente pelo `workflow_dispatch`;
 - identifica os JSONs alterados em `n8n/workflows`;
 - envia esses arquivos ao gerenciador de deploy do n8n;
 - usa o header `X-Deployment-Secret` para autenticar a chamada;

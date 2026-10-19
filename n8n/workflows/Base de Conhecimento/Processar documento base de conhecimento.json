@@ -65,12 +65,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"processar_base_conhecimento\"\n}",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE_Elo }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE_Elo }}\",\n  \"p_scope\": \"processar_base_conhecimento\"\n}",
         "options": {
           "response": {
             "response": {
@@ -99,7 +99,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_finalizar_processamento_documento_base_conhecimento\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_finalizar_processamento_documento_base_conhecimento\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
@@ -155,12 +155,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"processar_base_conhecimento\"\n}",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE_Elo }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE_Elo }}\",\n  \"p_scope\": \"processar_base_conhecimento\"\n}",
         "options": {
           "response": {
             "response": {
@@ -188,7 +188,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_finalizar_processamento_documento_base_conhecimento\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_finalizar_processamento_documento_base_conhecimento\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
@@ -291,12 +291,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE_Elo }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE_Elo }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
         "options": {
           "response": {
             "response": {
@@ -324,7 +324,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_iniciar_indexacao_documento_base_conhecimento\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_iniciar_indexacao_documento_base_conhecimento\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
@@ -411,12 +411,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE_Elo }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE_Elo }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
         "options": {
           "response": {
             "response": {
@@ -444,7 +444,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_salvar_chunks_base_conhecimento_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_salvar_chunks_base_conhecimento_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
@@ -493,12 +493,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE_Elo }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE_Elo }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
         "options": {
           "response": {
             "response": {
@@ -526,7 +526,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_finalizar_indexacao_documento_base_conhecimento\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_finalizar_indexacao_documento_base_conhecimento\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
@@ -696,12 +696,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE_Elo }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE_Elo }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
         "options": {
           "response": {
             "response": {
@@ -728,7 +728,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_enfileirar_chunks_pendentes_base_conhecimento_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_enfileirar_chunks_pendentes_base_conhecimento_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
@@ -912,7 +912,7 @@
             {
               "id": "7a96af32-b8f7-4813-8c83-c9e373649027",
               "leftValue": "={{ $json.body.url_documento }}",
-              "rightValue": "={{ ($env.N8N_SUPABASE_URL || '').replace(/^https?:\\/\\//, '').split('/')[0] }}",
+              "rightValue": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/^https?:\\/\\//, '').split('/')[0] }}",
               "operator": {
                 "type": "string",
                 "operation": "contains"
@@ -935,12 +935,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE_Elo }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE_Elo }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
         "options": {
           "response": {
             "response": {
@@ -968,7 +968,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_obter_amostra_documento_base_conhecimento_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_obter_amostra_documento_base_conhecimento_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
@@ -1096,12 +1096,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE_Elo }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE_Elo }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
         "options": {
           "response": {
             "response": {
@@ -1129,7 +1129,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_salvar_indice_documento_base_conhecimento_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_salvar_indice_documento_base_conhecimento_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
@@ -1274,7 +1274,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_finalizar_indexacao_documento_base_conhecimento\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_finalizar_indexacao_documento_base_conhecimento\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
@@ -1336,12 +1336,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE_Elo }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE_Elo }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
         "options": {
           "response": {
             "response": {

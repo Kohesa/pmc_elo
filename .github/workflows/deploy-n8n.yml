@@ -1,14 +1,16 @@
 name: Deploy n8n workflows
 
 on:
-  push:
-    branches:
-      - homolog
-      - master
-    paths:
-      - "n8n/workflows/**"
-      - "n8n/infraestrutura/**"
-      - ".github/workflows/deploy-n8n.yml"
+  # Deploy automatico temporariamente desabilitado.
+  # Para reativar, remova os comentarios do bloco abaixo.
+  # push:
+  #   branches:
+  #     - homolog
+  #     - master
+  #   paths:
+  #     - "n8n/workflows/**"
+  #     - "n8n/infraestrutura/**"
+  #     - ".github/workflows/deploy-n8n.yml"
   workflow_dispatch:
 
 permissions:

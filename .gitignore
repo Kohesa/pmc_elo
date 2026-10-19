@@ -26,3 +26,7 @@ Frontend/.env*
 
 # Base de referencia da arquitetura Koris (somente local)
 Chatbot Koris/
+
+# Materiais de apoio e planejamento (somente locais)
+Documentos suportes/
+Plano-de-Desenvolvimento/
