@@ -1,0 +1,666 @@
+{
+  "name": "Indexar chunks pendentes documento grande",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "documento_id"
+            },
+            {
+              "name": "auth_user_id"
+            },
+            {
+              "name": "qtd_chunks"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1312,
+        928
+      ],
+      "id": "2897e8be-c6b0-4126-9175-49c123b00aee",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1088,
+        928
+      ],
+      "id": "7f455dc6-7ade-4329-9ed5-d101224e4683",
+      "name": "Criar token listar chunks pendentes",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      },
+      "notes": "ATENCAO: este node deve receber somente 1 item por rodada. O node Preparar nova listagem pendentes colapsa o done do loop antes de voltar para ca."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_listar_chunks_pendentes_base_conhecimento_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_documento_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.documento_id }}"
+            },
+            {
+              "name": "p_auth_user_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.auth_user_id }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -848,
+        928
+      ],
+      "id": "fecce2f1-b1d8-4611-8771-f5e5642af2c1",
+      "name": "Listar chunks pendentes",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      },
+      "notes": "ALTERADO: a RPC agora deve retornar no maximo 100 chunks por chamada. A relistagem precisa chegar aqui com somente 1 item de token S2S."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        1232
+      ],
+      "id": "eb5ee404-f0eb-4fc8-bd52-3dd130ce3150",
+      "name": "Loop Over Items - chunks pendentes",
+      "notesInFlow": true,
+      "notes": "ALTERADO: apesar do nome, agora cada item deste loop e um micro-lote com ate 10 chunks."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// ALTERACAO OPENAI EMBEDDINGS\n// Junta o retorno da OpenAI Embeddings API com o micro-lote original.\n// Saida: 1 item contendo todos os embeddings do lote para salvar via RPC batch.\n\nconst lote = $('Loop Over Items - chunks pendentes').item.json;\nconst response = $json;\nconst data = Array.isArray(response?.data) ? response.data : [];\n\nif (!Array.isArray(lote?.chunks) || lote.chunks.length === 0) {\n  throw new Error('Micro-lote original ausente para anexar embeddings.');\n}\n\nif (data.length !== lote.chunks.length) {\n  throw new Error(`OpenAI retornou ${data.length} embeddings para ${lote.chunks.length} chunks.`);\n}\n\nconst embeddingsPorIndex = new Map(data.map(item => [item.index, item.embedding]));\n\nconst chunks = lote.chunks.map((chunk, index) => {\n  const embedding = embeddingsPorIndex.get(index);\n\n  if (!Array.isArray(embedding)) {\n    throw new Error(`Embedding invalido no chunk pendente ${chunk.chunk_index}.`);\n  }\n\n  if (embedding.length !== 384) {\n    throw new Error(\n      `Embedding com dimensao invalida no chunk pendente ${chunk.chunk_index}: esperado 384, recebido ${embedding.length}.`\n    );\n  }\n\n  return {\n    chunk_pendente_id: chunk.id,\n    embedding\n  };\n});\n\nreturn {\n  json: {\n    documento_id: lote.documento_id,\n    auth_user_id: lote.auth_user_id,\n    lote_index: lote.lote_index,\n    qtd_chunks_lote: chunks.length,\n    embedding_model: 'text-embedding-3-small',\n    total_tokens_embedding: response?.usage?.total_tokens || 0,\n    chunks\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        1248
+      ],
+      "id": "237b590e-cd1f-44bb-9bc8-597da2c7ac4f",
+      "name": "Anexar embeddings ao lote pendente",
+      "notesInFlow": true,
+      "notes": "ALTERADO: transforma o retorno em lote em p_chunks para a RPC batch de salvamento."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        608,
+        1248
+      ],
+      "id": "196fc6bc-57e8-4200-b045-dca3ebe21af3",
+      "name": "Criar token salvar lote pendente",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      },
+      "notes": "ALTERADO: agora cria 1 token S2S para salvar um micro-lote de chunks pendentes."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_salvar_chunks_pendentes_indexados_lote_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_documento_id",
+              "value": "={{ $('Anexar embeddings ao lote pendente').item.json.documento_id }}"
+            },
+            {
+              "name": "p_auth_user_id",
+              "value": "={{ $('Anexar embeddings ao lote pendente').item.json.auth_user_id }}"
+            },
+            {
+              "name": "p_chunks",
+              "value": "={{ $('Anexar embeddings ao lote pendente').item.json.chunks }}"
+            },
+            {
+              "name": "p_embedding_model",
+              "value": "={{ $('Anexar embeddings ao lote pendente').item.json.embedding_model }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        880,
+        1248
+      ],
+      "id": "792b7a61-5d4d-4623-aea5-45ca3998f389",
+      "name": "Salvar lote pendente indexado",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      },
+      "notes": "ALTERADO: salva ate 10 chunks indexados de uma vez usando rpc_salvar_chunks_pendentes_indexados_lote_s2s."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ALTERACAO DOCUMENTO GRANDE\n// Retorna ao fluxo principal somente quando nao ha mais chunks pendentes.\n// O fluxo principal finaliza status_indexacao=indexado e gera o indice contextual.\n\nconst input = $('When Executed by Another Workflow').first().json;\n\nreturn [{\n  json: {\n    documento_id: input.documento_id,\n    auth_user_id: input.auth_user_id,\n    qtd_chunks: Number(input.qtd_chunks || 0),\n    embedding_model: 'text-embedding-3-small',\n    gerar_indice_contextual: true,\n    limite_amostra_indice_contextual: 15\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        912
+      ],
+      "id": "53b860a9-381c-48f7-8aa5-10a9317a6097",
+      "name": "Retornar resumo indexacao lenta",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "content": "## Iniciar indexacao de itens pendentes\n\nLista ate 100 pendentes, agrupa em micro-lotes de 50, gera embeddings direto na OpenAI e salva em lote. Depois relista ate zerar.",
+        "height": 304,
+        "width": 720,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1168,
+        832
+      ],
+      "typeVersion": 1,
+      "id": "dbd9f36f-11a2-4e3d-8734-0a22726a69b9",
+      "name": "Sticky Note",
+      "notesInFlow": true,
+      "notes": "ALTERADO: documenta a nova relistagem por lotes ate zerar pendentes."
+    },
+    {
+      "parameters": {
+        "content": "## Indexar micro-lote\n\nCada item do loop contem ate 50 chunks. O fluxo gera embeddings direto na OpenAI em uma chamada e salva todos em uma RPC.",
+        "height": 304,
+        "width": 1536,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -208,
+        1136
+      ],
+      "typeVersion": 1,
+      "id": "267ecbc6-c578-4867-9e9c-15286dea3a93",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ALTERACAO BATCH EMBEDDING\n// A RPC lista ate 100 chunks pendentes. Este node agrupa esses chunks em\n// micro-lotes de 50 para gerar embeddings direto na OpenAI e salvar no banco em lote.\n\nconst entrada = $('When Executed by Another Workflow').first().json;\nconst TAMANHO_MICRO_LOTE = 50;\n\nconst chunks = $input.all()\n  .map(item => item.json || {})\n  .filter(item => item.id && item.conteudo);\n\nif (chunks.length === 0) {\n  return [{\n    json: {\n      sem_pendentes: true,\n      documento_id: entrada.documento_id,\n      auth_user_id: entrada.auth_user_id,\n      qtd_chunks: Number(entrada.qtd_chunks || 0),\n      embedding_model: 'text-embedding-3-small',\n      gerar_indice_contextual: true,\n      limite_amostra_indice_contextual: 15\n    }\n  }];\n}\n\nconst lotes = [];\n\nfor (let i = 0; i < chunks.length; i += TAMANHO_MICRO_LOTE) {\n  const lote = chunks.slice(i, i + TAMANHO_MICRO_LOTE);\n\n  lotes.push({\n    json: {\n      sem_pendentes: false,\n      documento_id: entrada.documento_id,\n      auth_user_id: entrada.auth_user_id,\n      lote_index: Math.floor(i / TAMANHO_MICRO_LOTE),\n      tamanho_micro_lote: TAMANHO_MICRO_LOTE,\n      total_chunks_recebidos: chunks.length,\n      chunks: lote.map(chunk => ({\n        id: chunk.id,\n        documento_id: chunk.documento_id,\n        chunk_index: chunk.chunk_index,\n        conteudo: chunk.conteudo,\n        conteudo_hash: chunk.conteudo_hash,\n        token_count: chunk.token_count\n      }))\n    }\n  });\n}\n\nreturn lotes;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        928
+      ],
+      "id": "4a6d8e3b-4d9e-4033-a28b-54e1051a3180",
+      "name": "Normalizar lote chunks pendentes",
+      "notesInFlow": true,
+      "notes": "ALTERADO: transforma ate 100 chunks pendentes em micro-lotes de 10. O loop abaixo processa lote, nao chunk individual."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a5efe1d1-094e-4d72-95a9-69a9f241123f",
+              "leftValue": "={{ $json.sem_pendentes }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -368,
+        928
+      ],
+      "id": "539408d5-fde0-42e0-a5c7-4a15fef3fc45",
+      "name": "If - lote sem pendentes?",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "content": "## Fluxo principal",
+        "height": 720,
+        "width": 2736,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1376,
+        768
+      ],
+      "typeVersion": 1,
+      "id": "5bf97791-0a11-45e7-b3ce-676b91e8585f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        912
+      ],
+      "id": "a5462fc7-6fc1-46ea-90a1-990aa510aaf2",
+      "name": "Preparar nova listagem pendentes",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        912
+      ],
+      "id": "dcfe93e1-80cc-48bd-990a-39851cbc5974",
+      "name": "Wait",
+      "webhookId": "0b60f1f9-c389-4352-b909-7c4300a25a13",
+      "notesInFlow": true,
+      "notes": "ALTERADO: aguarda 3 segundos antes de chamar a proxima execucao do subworkflow para relistar pendentes."
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        1248
+      ],
+      "id": "66ed15b6-c27a-48cb-a5bf-51f7f31efd8d",
+      "name": "Wait - respiro entre lotes de embeddings",
+      "webhookId": "d70a8c0a-89a1-40b7-b50a-fbf3a58256ad",
+      "notesInFlow": true,
+      "notes": "ALTERADO: agora aguarda 1 segundo entre micro-lotes de embeddings, nao entre chunks individuais."
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "8EaY0GH1wjxQUGM4",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/8EaY0GH1wjxQUGM4",
+          "cachedResultName": "Indexar chunks pendentes documento grande"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "documento_id": "={{ $('When Executed by Another Workflow').first().json.documento_id }}",
+            "auth_user_id": "={{ $('When Executed by Another Workflow').first().json.auth_user_id }}",
+            "qtd_chunks": "={{ String($('When Executed by Another Workflow').first().json.qtd_chunks) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "documento_id",
+              "displayName": "documento_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "auth_user_id",
+              "displayName": "auth_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "qtd_chunks",
+              "displayName": "qtd_chunks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        912
+      ],
+      "id": "8cc51066-d2e9-479b-ab9c-923122a75b4b",
+      "name": "Call 'Indexar chunks pendentes documento grande'"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    model: 'openai/text-embedding-3-small',\n    dimensions: 384,\n    input: $('Loop Over Items - chunks pendentes').item.json.chunks.map(chunk => chunk.conteudo)\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        112,
+        1248
+      ],
+      "id": "0a8bab26-dc6a-4680-90d6-7a31f9ff3e11",
+      "name": "Gerar embedding OpenRouter do chunk",
+      "credentials": {
+        "openRouterApi": {
+          "id": "oKqp4vNNKw0DgTNr",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Criar token listar chunks pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token listar chunks pendentes": {
+      "main": [
+        [
+          {
+            "node": "Listar chunks pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Listar chunks pendentes": {
+      "main": [
+        [
+          {
+            "node": "Normalizar lote chunks pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items - chunks pendentes": {
+      "main": [
+        [
+          {
+            "node": "Preparar nova listagem pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gerar embedding OpenRouter do chunk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar lote chunks pendentes": {
+      "main": [
+        [
+          {
+            "node": "If - lote sem pendentes?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - lote sem pendentes?": {
+      "main": [
+        [
+          {
+            "node": "Retornar resumo indexacao lenta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items - chunks pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar nova listagem pendentes": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Call 'Indexar chunks pendentes documento grande'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anexar embeddings ao lote pendente": {
+      "main": [
+        [
+          {
+            "node": "Criar token salvar lote pendente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token salvar lote pendente": {
+      "main": [
+        [
+          {
+            "node": "Salvar lote pendente indexado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar lote pendente indexado": {
+      "main": [
+        [
+          {
+            "node": "Wait - respiro entre lotes de embeddings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - respiro entre lotes de embeddings": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items - chunks pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar embedding OpenRouter do chunk": {
+      "main": [
+        [
+          {
+            "node": "Anexar embeddings ao lote pendente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e65c0531-4628-4663-8b6d-56e765ed4bb9",
+  "meta": {
+    "instanceId": "e25bbeec66c82b0534f57d741f8d06c716df5d0bdb6b2b8e37a3ce75b72e2497"
+  },
+  "id": "8EaY0GH1wjxQUGM4",
+  "tags": [
+    {
+      "updatedAt": "2026-04-22T20:34:26.672Z",
+      "createdAt": "2026-04-22T20:34:26.672Z",
+      "id": "0igcNlFVpE5vLD0t",
+      "name": "REFATORADO COM S2S"
+    },
+    {
+      "updatedAt": "2026-07-29T20:59:20.528Z",
+      "createdAt": "2026-07-29T20:59:20.528Z",
+      "id": "lIpiXBYCYxsgiwbO",
+      "name": "Homolog"
+    }
+  ]
+}

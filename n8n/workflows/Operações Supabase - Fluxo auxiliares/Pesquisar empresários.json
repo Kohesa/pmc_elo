@@ -1,0 +1,546 @@
+{
+  "name": "Pesquisar empresários",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "p_wa_user_id",
+              "type": "string"
+            },
+            {
+              "name": "pergunta",
+              "type": "string"
+            },
+            {
+              "name": "resolucao_busca",
+              "type": "string"
+            },
+            {
+              "name": "contexto_ia",
+              "type": "string"
+            },
+            {
+              "name": "sessao_token",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "649116e7-274f-458a-b921-cff65dd2c420",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const parse = (value, fallback = {}) => {\n  if (!value) return fallback;\n  if (typeof value === 'object') return value;\n  try { return JSON.parse(value); } catch { return fallback; }\n};\nconst clean = (value) => String(value || '').trim();\nconst compact = (value) => clean(value).replace(/\\s+/g, ' ').slice(0, 240);\nconst input = $input.first().json || {};\nconst resolucao = parse(input.resolucao_busca, {});\nconst contexto = parse(input.contexto_ia, {});\nconst entidadesContexto = contexto.entidades_ativas && typeof contexto.entidades_ativas === 'object'\n  ? contexto.entidades_ativas : {};\nconst entidadesResolucao = resolucao.entidades_ativas && typeof resolucao.entidades_ativas === 'object'\n  ? resolucao.entidades_ativas : {};\nconst estadoContexto = entidadesContexto.busca_empresarios && typeof entidadesContexto.busca_empresarios === 'object'\n  ? entidadesContexto.busca_empresarios : null;\nconst mensagem = compact(input.pergunta);\nconst mostrarMais = resolucao.tipo_intencao === 'mostrar_mais_empresarios'\n  || /\\b(mostrar|ver|quero|mande|envie|exibir|exiba)\\b.*\\b(mais|restante|resto|outro|outros)\\b/i.test(mensagem);\nconst continuarPendente = resolucao.modo_contexto === 'continuar_busca' && estadoContexto?.pendente && !mostrarMais;\nconst estado = mostrarMais || continuarPendente ? estadoContexto : null;\nconst entidades = { ...entidadesContexto, ...entidadesResolucao };\nif (resolucao.modo_contexto === 'nova_busca') delete entidades.busca_empresarios;\n\nlet precisaClarificacao = Boolean(resolucao.precisa_clarificacao);\nlet perguntaBusca = compact(resolucao.consulta_semantica || resolucao.pergunta_busca || mensagem);\nlet necessidade = compact(resolucao.necessidade);\nlet categoria = compact(resolucao.categoria_servico);\nlet tentativas = Number(estado?.tentativas_clarificacao || 0);\n\nif (estado?.pendente && !mostrarMais) {\n  const termoInicial = compact(estado.termo_inicial);\n  const consultaModelo = compact(resolucao.consulta_semantica || resolucao.pergunta_busca);\n  const respostaRefinamento = necessidade || mensagem;\n  perguntaBusca = consultaModelo && consultaModelo !== mensagem\n    ? consultaModelo\n    : compact([termoInicial, respostaRefinamento].filter(Boolean).join('. '));\n  categoria = categoria || compact(estado.categoria);\n  necessidade = necessidade || mensagem;\n  tentativas = 1;\n  precisaClarificacao = false;\n}\n\nlet acao = 'pesquisar';\nif (mostrarMais) acao = 'mostrar_mais';\nelse if (precisaClarificacao) acao = 'clarificar';\n\nreturn [{ json: {\n  ...input,\n  resolucao,\n  contexto,\n  entidades,\n  estado_busca: estado,\n  acao,\n  pergunta_busca: perguntaBusca || mensagem,\n  necessidade: necessidade || null,\n  categoria: categoria || null,\n  tentativas_clarificacao: tentativas,\n  pergunta_clarificacao: clean(resolucao.pergunta_clarificacao)\n    || 'Perfeito. Descreva melhor o serviço que procura ou o problema que precisa resolver.'\n} }];"
+      },
+      "id": "de4ab64b-73a3-4931-bc06-4100e4e94785",
+      "name": "Preparar pesquisa",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "23834edd-857a-4a51-8f33-f7e7c125a645",
+              "leftValue": "={{ $json.acao === 'clarificar' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cd28bfc2-24ed-484a-bdbf-e9855ccc3429",
+      "name": "IF - Precisa esclarecer?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $('Preparar pesquisa').first().json;\nconst busca = {\n  pendente: true,\n  termo_inicial: r.estado_busca?.termo_inicial || r.pergunta,\n  categoria: r.categoria || null,\n  pergunta_clarificacao: r.pergunta_clarificacao,\n  tentativas_clarificacao: 1,\n  criada_em: r.estado_busca?.criada_em || new Date().toISOString(),\n  expira_em: new Date(Date.now() + 60 * 60 * 1000).toISOString()\n};\nconst entidades = { ...r.entidades, busca_empresarios: busca, tipo_intencao: 'busca_servico', dominio_busca: 'empresarios' };\nreturn [{ json: {\n  _tipo: 'sem_chunks', conteudo: null, _dominio: 'empresarios', _rag_contextual: false,\n  consultar_base_conhecimento: false, tipo_intencao: 'clarificacao', metodo_busca: 'nenhum',\n  sessao_token: r.sessao_token, contexto_ia: r.contexto, resolucao_busca: { ...r.resolucao, precisa_clarificacao: true, pergunta_clarificacao: r.pergunta_clarificacao, entidades_ativas: entidades },\n  pergunta_busca: r.pergunta_busca, pergunta_original: r.pergunta,\n  precisa_clarificacao: true, pergunta_clarificacao: r.pergunta_clarificacao,\n  assunto_ativo: 'pesquisa de empresários', entidades_ativas: entidades,\n  documentos: [], total_tokens_contexto_busca: Number(r.resolucao.total_tokens_resolucao_busca || 0)\n} }];"
+      },
+      "id": "316ecc78-4fd7-4008-8da5-af157773be1d",
+      "name": "Retornar esclarecimento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8d773b23-dd86-4d90-b269-26ce6b8a1752",
+              "leftValue": "={{ $json.acao === 'mostrar_mais' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "25215a7a-2d23-4a6f-9456-faa6ffe3bc15",
+      "name": "IF - Mostrar mais?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + '/rest/v1/rpc/rpc_autenticar_s2s' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"buscar_contexto_ia\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "95e5a0d5-f105-4f49-98a6-3d046a68fcbb",
+      "name": "Criar token validar resultados",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        96
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + '/rest/v1/rpc/rpc_validar_empresarios_publicados_s2s' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { p_wa_user_id: $('Preparar pesquisa').first().json.p_wa_user_id, p_servico_ids: ($('Preparar pesquisa').first().json.estado_busca?.resultados || []).slice(Number($('Preparar pesquisa').first().json.estado_busca?.exibidos || 0), Number($('Preparar pesquisa').first().json.estado_busca?.exibidos || 0) + 5).map(item => item.servico_id), p_sessao_token: $('Preparar pesquisa').first().json.sessao_token, p_token_s2s: $('Criar token validar resultados').first().json.data } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "3f9561aa-898a-4852-8b9c-279b4cc0de6a",
+      "name": "Validar resultados restantes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        96
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const parse = (value, fallback = []) => {\n  if (!value) return fallback;\n  if (Array.isArray(value)) return value;\n  if (typeof value === 'object' && value.data !== undefined) return parse(value.data, fallback);\n  try { return JSON.parse(value); } catch { return fallback; }\n};\nconst r = $('Preparar pesquisa').first().json;\nconst estado = r.estado_busca;\nif (!estado?.resultados?.length) {\n  const entidades = { ...r.entidades, tipo_intencao: 'busca_servico', dominio_busca: 'empresarios' };\n  return [{ json: { _tipo: 'sem_chunks', conteudo: null, _dominio: 'empresarios', _rag_contextual: false,\n    consultar_base_conhecimento: false, tipo_intencao: 'clarificacao', metodo_busca: 'nenhum', sessao_token: r.sessao_token,\n    contexto_ia: r.contexto, pergunta_busca: r.pergunta, pergunta_original: r.pergunta, precisa_clarificacao: true,\n    pergunta_clarificacao: 'Faça primeiro uma pesquisa de serviço para eu poder mostrar os demais resultados.', assunto_ativo: 'pesquisa de empresários',\n    entidades_ativas: entidades, resolucao_busca: { ...r.resolucao, precisa_clarificacao: true, pergunta_clarificacao: 'Faça primeiro uma pesquisa de serviço para eu poder mostrar os demais resultados.', entidades_ativas: entidades },\n    documentos: [], total_tokens_contexto_busca: Number(r.resolucao.total_tokens_resolucao_busca || 0) } }];\n}\nconst validos = parse($input.first().json?.data ?? $input.first().json, []);\nconst porId = new Map(validos.map((item) => [item.servico_id, item]));\nconst TAMANHO_PAGINA = 5;\nconst inicio = Number(estado.exibidos || 0);\nconst fim = Math.min(inicio + TAMANHO_PAGINA, estado.resultados.length);\nconst pagina = estado.resultados.slice(inicio, fim);\nconst restantesOrdenados = pagina.map((ref) => ({ ...porId.get(ref.servico_id), ...ref })).filter((item) => item.servico_id && porId.has(item.servico_id));\nconst atualizado = { ...estado, exibidos: fim };\nconst entidades = { ...r.entidades, busca_empresarios: atualizado, tipo_intencao: 'mostrar_mais_empresarios', dominio_busca: 'empresarios' };\nconst metadata = { _dominio: 'empresarios', _rag_contextual: true, consultar_base_conhecimento: true,\n  tipo_intencao: 'mostrar_mais_empresarios', metodo_busca: 'continuidade', sessao_token: r.sessao_token, contexto_ia: r.contexto,\n  pergunta_busca: estado.consulta || r.pergunta, pergunta_original: r.pergunta, precisa_clarificacao: false, assunto_ativo: 'pesquisa de empresários',\n  entidades_ativas: entidades, total_resultados_empresarios: restantesOrdenados.length,\n  total_restantes_empresarios: Math.max(0, estado.resultados.length - fim),\n  total_tokens_contexto_busca: Number(r.resolucao.total_tokens_resolucao_busca || 0), resolucao_busca: { ...r.resolucao, entidades_ativas: entidades } };\nif (!restantesOrdenados.length) return [{ json: { _tipo: 'sem_chunks', conteudo: null, ...metadata } }];\nreturn restantesOrdenados.map((item) => ({ json: { ...item, ...metadata,\n  ordem_exibicao: item.ordem, chunk_id: item.servico_id, base_conhecimento_id: item.servico_id,\n  documento_titulo: [item.servico, item.empresa].filter(Boolean).join(' — '), score_documento: item.score, score: item.score,\n  chunk_index: 0, origem: 'diretorio_empresarios_continuacao',\n  conteudo: ['Nome: ' + (item.nome || ''), 'Empresa: ' + (item.empresa || ''), 'Serviço: ' + (item.servico || ''),\n    'Categoria: ' + (item.categoria || ''), 'Descrição: ' + (item.descricao || ''),\n    item.site ? 'Site: ' + item.site : '', item.telefone ? 'Telefone: ' + item.telefone : '', item.email ? 'E-mail: ' + item.email : '',\n    item.instagram ? 'Instagram: ' + item.instagram : '', item.linkedin ? 'LinkedIn: ' + item.linkedin : ''].filter(Boolean).join('\\n')\n} }));"
+      },
+      "id": "c43c7f1c-65d0-49bd-8fbb-fe12ebbe6ac9",
+      "name": "Formatar resultados restantes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'openai/text-embedding-3-small', dimensions: 384, input: $('Preparar pesquisa').first().json.pergunta_busca } }}",
+        "options": {}
+      },
+      "id": "605b7fd6-f846-4951-8010-a67378a84a11",
+      "name": "Gerar embedding da pesquisa",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        384
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "oKqp4vNNKw0DgTNr",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + '/rest/v1/rpc/rpc_autenticar_s2s' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"buscar_contexto_ia\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "c17fc6a2-cb94-4e47-84bb-baf5228168de",
+      "name": "Criar token pesquisar empresários",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        384
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + '/rest/v1/rpc/rpc_buscar_candidatos_servicos_s2s' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { p_wa_user_id: $('Preparar pesquisa').first().json.p_wa_user_id, p_consulta: $('Preparar pesquisa').first().json.pergunta_busca, p_embedding_pergunta: $('Gerar embedding da pesquisa').first().json.data[0].embedding, p_limite: 30, p_sessao_token: $('Preparar pesquisa').first().json.sessao_token, p_token_s2s: $('Criar token pesquisar empresários').first().json.data } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "29c57eb8-d5ce-4476-8d48-c1d6472461c1",
+      "name": "Pesquisar empresários publicados",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1344,
+        384
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $('Preparar pesquisa').first().json;\nconst ranking = $('Aplicar reranking').first().json || {};\nconst todos = (Array.isArray(ranking.candidatos) ? ranking.candidatos : [])\n  .map((item, index) => ({ ...item, ordem_exibicao: index + 1 }));\nconst exibidos = todos.slice(0, 5);\nconst refs = todos.map((item, index) => ({ servico_id: item.servico_id, ordem: index + 1, score: item.score }));\nconst busca = {\n  pendente: false,\n  consulta: r.pergunta_busca,\n  categoria: r.categoria || null,\n  resultados: refs,\n  exibidos: exibidos.length,\n  total: todos.length,\n  criada_em: new Date().toISOString(),\n  expira_em: new Date(Date.now() + 60 * 60 * 1000).toISOString()\n};\nconst entidades = { ...r.entidades, busca_empresarios: busca, tipo_intencao: 'busca_servico', dominio_busca: 'empresarios' };\nconst restantes = Math.max(0, todos.length - exibidos.length);\nconst metadata = {\n  _dominio: 'empresarios', _rag_contextual: true, consultar_base_conhecimento: true,\n  tipo_intencao: 'busca_servico', metodo_busca: 'hibrido_com_reranking', sessao_token: r.sessao_token,\n  contexto_ia: r.contexto, pergunta_busca: r.pergunta_busca, pergunta_original: r.pergunta,\n  precisa_clarificacao: false, pergunta_clarificacao: null, assunto_ativo: 'pesquisa de empresários',\n  entidades_ativas: entidades, total_resultados_empresarios: todos.length,\n  total_restantes_empresarios: restantes,\n  total_tokens_contexto_busca: Number(r.resolucao.total_tokens_resolucao_busca || 0)\n    + Number($('Gerar embedding da pesquisa').first().json.usage?.total_tokens || 0)\n    + Number(ranking.total_tokens_reranking || 0),\n  resolucao_busca: { ...r.resolucao, dominio_busca: 'empresarios', entidades_ativas: entidades }\n};\nif (!exibidos.length) return [{ json: { _tipo: 'sem_chunks', conteudo: null, ...metadata } }];\nreturn exibidos.map((item) => ({ json: {\n  ...item, ...metadata,\n  chunk_id: item.servico_id, base_conhecimento_id: item.servico_id,\n  documento_titulo: [item.servico, item.empresa].filter(Boolean).join(' — '),\n  score_documento: item.score, chunk_index: 0, origem: 'catalogo_servicos_rerankeado',\n  conteudo: [\n    'Nome: ' + (item.nome || ''), 'Empresa: ' + (item.empresa || ''),\n    'Serviço: ' + (item.servico || ''), 'Categoria informada: ' + (item.categoria || ''),\n    'Descrição: ' + (item.descricao || ''),\n    item.problemas_resolvidos ? 'Problemas atendidos: ' + item.problemas_resolvidos : '',\n    item.site ? 'Site: ' + item.site : '', item.telefone ? 'Telefone: ' + item.telefone : '',\n    item.email ? 'E-mail: ' + item.email : '', item.instagram ? 'Instagram: ' + item.instagram : '',\n    item.linkedin ? 'LinkedIn: ' + item.linkedin : ''\n  ].filter(Boolean).join('\\n')\n} }));"
+      },
+      "id": "e0ecd8fa-0b6e-42ab-a017-855a34f31d15",
+      "name": "Formatar pesquisa de empresários",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const parse = (value, fallback = []) => {\n  if (!value) return fallback;\n  if (Array.isArray(value)) return value;\n  if (typeof value === 'object' && value.data !== undefined) return parse(value.data, fallback);\n  try { return JSON.parse(value); } catch { return fallback; }\n};\nconst raw = $input.first().json?.data ?? $input.first().json;\nconst candidatos = parse(raw, []).slice(0, 30);\nif (!candidatos.length) return [{ json: { candidatos: [], body: null } }];\nconst necessidade = $('Preparar pesquisa').first().json.pergunta_busca;\nconst documentos = candidatos.map((item) => ({\n  servico_id: item.servico_id,\n  empresa: item.empresa || '',\n  servico: item.servico || '',\n  categoria_informada: item.categoria || '',\n  descricao: String(item.descricao || '').slice(0, 700),\n  problemas_resolvidos: String(item.problemas_resolvidos || '').slice(0, 500),\n  especialidades: Array.isArray(item.especialidades) ? item.especialidades.slice(0, 12) : []\n}));\nconst schema = {\n  type: 'object', additionalProperties: false,\n  properties: {\n    resultados: {\n      type: 'array',\n      items: {\n        type: 'object', additionalProperties: false,\n        properties: {\n          servico_id: { type: 'string' },\n          score: { type: 'integer', minimum: 0, maximum: 100 }\n        },\n        required: ['servico_id', 'score']\n      }\n    }\n  },\n  required: ['resultados']\n};\nconst body = {\n  model: 'google/gemini-2.5-flash', temperature: 0, max_tokens: 1600,\n  reasoning: { enabled: false },\n  response_format: { type: 'json_schema', json_schema: { name: 'elo_reranking_servicos', strict: true, schema } },\n  messages: [\n    { role: 'system', content: [\n      'Você é o reranker da pesquisa de serviços da Elo Connect.',\n      'Compare a necessidade somente com as informações explícitas de cada oferta.',\n      'Não presuma serviços que não estejam descritos e não use reputação, religião ou atributos pessoais.',\n      'Atribua de 0 a 100 para a capacidade real da oferta resolver a necessidade.',\n      '0 a 20 significa incompatível; 21 a 49 significa evidência insuficiente; 50 a 79 significa compatível; 80 a 100 significa correspondência direta.',\n      'Retorne todos os servico_id recebidos exatamente uma vez e não invente identificadores.'\n    ].join('\\n') },\n    { role: 'user', content: JSON.stringify({ necessidade, candidatos: documentos }) }\n  ]\n};\nreturn [{ json: { candidatos, body } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1500,
+        500
+      ],
+      "id": "332101e9-50e7-4a40-bdf7-b2c3113c7df4",
+      "name": "Preparar reranking"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1720,
+        500
+      ],
+      "id": "4befe446-229a-4c79-9f33-c7e23181e073",
+      "name": "Ranquear candidatos",
+      "retryOnFail": true,
+      "credentials": {
+        "openRouterApi": {
+          "id": "oKqp4vNNKw0DgTNr",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const clean = (value) => String(value || '').trim();\nconst parseJson = (value) => {\n  if (value && typeof value === 'object') return value;\n  const text = clean(value).replace(/```json|```/g, '').trim();\n  try { return JSON.parse(text); } catch {}\n  const match = text.match(/\\{[\\s\\S]*\\}/);\n  if (match) { try { return JSON.parse(match[0]); } catch {} }\n  return null;\n};\nconst preparado = $('Preparar reranking').first().json || {};\nconst candidatos = Array.isArray(preparado.candidatos) ? preparado.candidatos : [];\nif (!candidatos.length) return [{ json: { candidatos: [], total_tokens_reranking: 0 } }];\nconst resposta = $input.first().json || {};\nconst parsed = parseJson(resposta.choices?.[0]?.message?.content);\nif (!parsed || !Array.isArray(parsed.resultados)) throw new Error('O reranker não retornou JSON válido.');\nconst porId = new Map(candidatos.map((item) => [String(item.servico_id), item]));\nconst pontuados = parsed.resultados\n  .map((item) => {\n    const candidato = porId.get(String(item.servico_id));\n    if (!candidato) return null;\n    const score = Math.max(0, Math.min(100, Number(item.score)));\n    if (!Number.isFinite(score)) return null;\n    return { ...candidato, score_rerank: score, score: score / 100 };\n  })\n  .filter((item) => item && item.score_rerank >= 50)\n  .sort((a, b) => {\n    if (b.score_rerank !== a.score_rerank) return b.score_rerank - a.score_rerank;\n    const da = Date.parse(a.cadastro_criado_em || '') || Number.MAX_SAFE_INTEGER;\n    const db = Date.parse(b.cadastro_criado_em || '') || Number.MAX_SAFE_INTEGER;\n    if (da !== db) return da - db;\n    return String(a.cadastro_id).localeCompare(String(b.cadastro_id));\n  });\nconst normalizarEmpresa = (value) => clean(value)\n  .normalize('NFD')\n  .replace(/[\\u0300-\\u036f]/g, '')\n  .toLowerCase()\n  .replace(/[^a-z0-9]+/g, ' ')\n  .trim();\nconst vistos = new Set();\nconst unicos = pontuados.filter((item) => {\n  const empresa = normalizarEmpresa(item.empresa);\n  const id = empresa ? `empresa:${empresa}` : `cadastro:${String(item.cadastro_id)}`;\n  if (vistos.has(id)) return false;\n  vistos.add(id);\n  return true;\n});\nreturn [{ json: { candidatos: unicos, total_tokens_reranking: Number(resposta.usage?.total_tokens || 0) } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1940,
+        500
+      ],
+      "id": "d00768d5-a0cb-4a08-89a3-0a82eeb700b8",
+      "name": "Aplicar reranking"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Preparar pesquisa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar pesquisa": {
+      "main": [
+        [
+          {
+            "node": "IF - Precisa esclarecer?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Precisa esclarecer?": {
+      "main": [
+        [
+          {
+            "node": "Retornar esclarecimento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF - Mostrar mais?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Mostrar mais?": {
+      "main": [
+        [
+          {
+            "node": "Criar token validar resultados",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gerar embedding da pesquisa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token validar resultados": {
+      "main": [
+        [
+          {
+            "node": "Validar resultados restantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar resultados restantes": {
+      "main": [
+        [
+          {
+            "node": "Formatar resultados restantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar embedding da pesquisa": {
+      "main": [
+        [
+          {
+            "node": "Criar token pesquisar empresários",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token pesquisar empresários": {
+      "main": [
+        [
+          {
+            "node": "Pesquisar empresários publicados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pesquisar empresários publicados": {
+      "main": [
+        [
+          {
+            "node": "Preparar reranking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar reranking": {
+      "main": [
+        [
+          {
+            "node": "Ranquear candidatos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ranquear candidatos": {
+      "main": [
+        [
+          {
+            "node": "Aplicar reranking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aplicar reranking": {
+      "main": [
+        [
+          {
+            "node": "Formatar pesquisa de empresários",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "70d4b842-b1a8-4ddd-82b0-4ad2a0c7ecad",
+  "meta": {
+    "instanceId": "e25bbeec66c82b0534f57d741f8d06c716df5d0bdb6b2b8e37a3ce75b72e2497"
+  },
+  "id": "5Yk2cD9mR7pQ1sV8",
+  "tags": [
+    {
+      "updatedAt": "2026-04-22T20:34:26.672Z",
+      "createdAt": "2026-04-22T20:34:26.672Z",
+      "id": "0igcNlFVpE5vLD0t",
+      "name": "REFATORADO COM S2S"
+    },
+    {
+      "updatedAt": "2026-04-20T18:42:55.819Z",
+      "createdAt": "2026-04-20T18:42:55.819Z",
+      "id": "rvY991tpgRZgNqOY",
+      "name": "CHATBOT -KORIS"
+    }
+  ]
+}

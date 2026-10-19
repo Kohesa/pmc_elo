@@ -1,0 +1,761 @@
+{
+  "name": "Verificação se mensagem chegou para o usuário",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Verificar se a mensagem chegou ao usuário",
+        "height": 880,
+        "width": 2580,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -448,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "1fb28646-fab6-4303-b709-b871e64471cb",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        128,
+        368
+      ],
+      "id": "39e94889-ab30-49e7-bcc9-203231645733",
+      "name": "Wait - Atualizar status mensagem enviada",
+      "webhookId": "d8f2e059-e173-4b99-bf8e-761e81fe4522"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "38c0bccf-661b-446e-8ccb-446879011328",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        368
+      ],
+      "id": "763ea589-f642-4f73-8f64-55ea4446dc54",
+      "name": "If - Mensagem existe no banco de dados?"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Call \\'Consultar Mensagems  - Desc\\'').item.json.status_mensagem }}",
+                    "rightValue": "delivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "690ef0ba-47e9-42e5-b975-b7e94f6867cf"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delivered"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9ad27f6d-fa34-462c-aa3d-4a6b8cd0adbb",
+                    "leftValue": "={{ $('Call \\'Consultar Mensagems  - Desc\\'').item.json.status_mensagem }}",
+                    "rightValue": "read",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "read"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7d785864-b7a8-425c-82fd-ed46dfc2ea43",
+                    "leftValue": "={{ $('Call \\'Consultar Mensagems  - Desc\\'').item.json.status_mensagem }}",
+                    "rightValue": "sent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "eeb9ffb2-3678-422b-be83-89cabe2e97fb",
+                    "leftValue": "={{ $('Call \\'Consultar Mensagems  - Desc\\'').item.json.status_mensagem }}",
+                    "rightValue": "failed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "failed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "aff383e9-7d62-4e7d-982e-fcd051302c50",
+                    "leftValue": "={{ $('Call \\'Consultar Mensagems  - Desc\\'').item.json.status_mensagem }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "empty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sem status"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        288
+      ],
+      "id": "faff42ef-3c40-4560-925e-7f0fcaad2363",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "zhPAKTVIiFaYtBoV",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/zhPAKTVIiFaYtBoV",
+          "cachedResultName": "Mensagens de fallback para o usuário - Elo"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "número": "={{ $('When Executed by Another Workflow').item.json['número'] }}",
+            "nome": "={{ $('When Executed by Another Workflow').item.json.nome }}",
+            "account_id": "={{ $('When Executed by Another Workflow').first().json.account_id }}",
+            "inbox_id": "={{ $('When Executed by Another Workflow').first().json.inbox_id }}",
+            "conversation_id": "={{ $('When Executed by Another Workflow').first().json.conversation_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "número",
+              "displayName": "número",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "account_id",
+              "displayName": "account_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "inbox_id",
+              "displayName": "inbox_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "conversation_id",
+              "displayName": "conversation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1440,
+        208
+      ],
+      "id": "d43bb64a-60db-4b21-ba24-d90929663a49",
+      "name": "Enviar mensagem de erro no whatsapp"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Erro ao enviar mensagem de resposta para o usuário. Falhou no Chatwoot"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        208
+      ],
+      "id": "071fbef1-d44c-486b-a57b-e3136bc26151",
+      "name": "Stop and Error6"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        32
+      ],
+      "id": "65e4ca60-9c3e-479b-bf8a-38051a9b2bef",
+      "name": "Zerar itens output"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        208
+      ],
+      "id": "b652589f-aa2a-4f64-b0ed-1e460e71a02c",
+      "name": "Zerar itens output1"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Novo status não mapeado"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        528
+      ],
+      "id": "1a19f3d3-f500-4e08-9c96-050ebfd834ae",
+      "name": "Status não mapeado"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "número"
+            },
+            {
+              "name": "nome"
+            },
+            {
+              "name": "mensagem_id"
+            },
+            {
+              "name": "id_user_whatsapp"
+            },
+            {
+              "name": "account_id",
+              "type": "number"
+            },
+            {
+              "name": "inbox_id",
+              "type": "number"
+            },
+            {
+              "name": "conversation_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -320,
+        368
+      ],
+      "id": "090d92db-bddb-46e1-bb11-a54281f0f5bd",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "6RAvsy4EOyDTHgAr",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/6RAvsy4EOyDTHgAr",
+          "cachedResultName": "Consultar Mensagems  - Desc"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "qtd_mensagens": 1,
+            "mensagem_id": "={{ $('When Executed by Another Workflow').item.json.mensagem_id }}",
+            "número": "={{ $('When Executed by Another Workflow').item.json['número'] }}",
+            "id_user_whatsapp": "={{ $('When Executed by Another Workflow').item.json.id_user_whatsapp }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "número",
+              "displayName": "número",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "qtd_mensagens",
+              "displayName": "qtd_mensagens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "mensagem_id",
+              "displayName": "mensagem_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "id_user_whatsapp",
+              "displayName": "id_user_whatsapp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        368
+      ],
+      "id": "1b2e5b57-3931-429d-9fdd-64ebba0a7ca7",
+      "name": "Call 'Consultar Mensagems  - Desc'",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b3821c5c-50fe-45a3-94d4-585a33e44a07",
+              "name": "inicio",
+              "value": "={{ Date.now() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        368
+      ],
+      "id": "9d9665bb-4763-47ad-af79-6f9b8ba94da3",
+      "name": "Registrar inicio execução"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b3821c5c-50fe-45a3-94d4-585a33e44a07",
+              "name": "atual",
+              "value": "={{ Date.now() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1440,
+        400
+      ],
+      "id": "7ffb0d13-945f-430a-89a0-df1b7cf0b0d2",
+      "name": "Registrar hora atual"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3e21f198-6785-4452-a4ae-936658211ccf",
+              "leftValue": "={{ ($json.atual - $('Registrar inicio execução').item.json.inicio) / 1000 }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1664,
+        528
+      ],
+      "id": "5498b18c-7c0b-4cd8-b4f5-4dd17c0be41a",
+      "name": "If - timeout?"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Não localizado a mensagem no banco de dados para consultar o status"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        880,
+        576
+      ],
+      "id": "7182b6a1-7384-4c13-a63b-daa7eb5b5411",
+      "name": "Mensagem inexistente"
+    },
+    {
+      "parameters": {
+        "errorMessage": "=Timeout. Status da mensagem não encontrado no banco de dados.\n\nSegue detalhamento:\n\nid mensagem = {{ $('When Executed by Another Workflow').item.json.mensagem_id }}\nid do usuário = {{ $('When Executed by Another Workflow').item.json['número'] }}\nnome = {{ $('When Executed by Another Workflow').item.json.nome }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        512
+      ],
+      "id": "6d3eaa0e-4b21-41de-9b21-79cdf9dd164a",
+      "name": "Timeout para consultar status"
+    }
+  ],
+  "connections": {
+    "Wait - Atualizar status mensagem enviada": {
+      "main": [
+        [
+          {
+            "node": "Call 'Consultar Mensagems  - Desc'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Mensagem existe no banco de dados?": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem inexistente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Zerar itens output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Zerar itens output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Zerar itens output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Zerar itens output1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar hora atual",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Status não mapeado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar mensagem de erro no whatsapp": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zerar itens output": {
+      "main": [
+        []
+      ]
+    },
+    "Zerar itens output1": {
+      "main": [
+        [
+          {
+            "node": "Enviar mensagem de erro no whatsapp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Registrar inicio execução",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Consultar Mensagems  - Desc'": {
+      "main": [
+        [
+          {
+            "node": "If - Mensagem existe no banco de dados?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar inicio execução": {
+      "main": [
+        [
+          {
+            "node": "Wait - Atualizar status mensagem enviada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar hora atual": {
+      "main": [
+        [
+          {
+            "node": "If - timeout?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - timeout?": {
+      "main": [
+        [
+          {
+            "node": "Timeout para consultar status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait - Atualizar status mensagem enviada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "d5338d11-8a52-4f95-b8dc-730d52621ca3",
+  "meta": {
+    "instanceId": "e25bbeec66c82b0534f57d741f8d06c716df5d0bdb6b2b8e37a3ce75b72e2497"
+  },
+  "id": "iqai1EH2XQOPiPCm",
+  "tags": [
+    {
+      "updatedAt": "2026-04-22T20:34:26.672Z",
+      "createdAt": "2026-04-22T20:34:26.672Z",
+      "id": "0igcNlFVpE5vLD0t",
+      "name": "REFATORADO COM S2S"
+    },
+    {
+      "updatedAt": "2026-04-20T18:42:55.819Z",
+      "createdAt": "2026-04-20T18:42:55.819Z",
+      "id": "rvY991tpgRZgNqOY",
+      "name": "CHATBOT -KORIS"
+    }
+  ]
+}

@@ -1,0 +1,526 @@
+{
+  "name": "Criar ou pegar cadastro",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "id_wa_user"
+            },
+            {
+              "name": "telefone"
+            },
+            {
+              "name": "nome"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        3088,
+        1040
+      ],
+      "id": "a7016d06-3470-4515-82cc-ea89ef779005",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "16d01c00-867c-4f23-b980-f545691aafbd",
+              "leftValue": "={{ $json.id_wa_user }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3296,
+        1040
+      ],
+      "id": "eb93afcd-0dc0-480a-aa6d-cac1e034cd89",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_selecionar_cadastro_por_wa_id\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_sessao_token",
+              "value": "={{ $json.session }}"
+            },
+            {
+              "name": "p_id_usuario_wa",
+              "value": "={{ $('When Executed by Another Workflow').item.json.id_wa_user }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        5008,
+        832
+      ],
+      "id": "9f31e500-fdbf-40c5-9472-032b83fab053",
+      "name": "Consultar cadastro telefone",
+      "alwaysOutputData": true,
+      "retryOnFail": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_inserir_cadastro\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_id_usuario_wa",
+              "value": "={{ $('When Executed by Another Workflow').item.json.id_wa_user }}"
+            },
+            {
+              "name": "p_nome",
+              "value": "={{ $('When Executed by Another Workflow').item.json.nome }}"
+            },
+            {
+              "name": "p_tipo",
+              "value": "Pessoa"
+            },
+            {
+              "name": "p_sessao_token",
+              "value": "={{ $('Iniciar sessão').item.json.data }}"
+            },
+            {
+              "name": "p_telefone",
+              "value": "={{ $('When Executed by Another Workflow').item.json.telefone }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "id"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        5504,
+        1040
+      ],
+      "id": "e3421a63-51b4-4c34-aa8a-f404945ae037",
+      "name": "Criar cadastro",
+      "alwaysOutputData": true,
+      "retryOnFail": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "468b201e-9e80-467a-a299-2f7017b3cf02",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4384,
+        1232
+      ],
+      "id": "077ec69a-2bf5-422c-914c-362bb430998c",
+      "name": "If - Retornou o token?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const session = $input.first().json.data\n\nreturn {\n  session\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4784,
+        832
+      ],
+      "id": "d197f7ac-a0a1-4fdb-9e82-da283b7c67f6",
+      "name": "setar session1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"set_contexto\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3968,
+        1232
+      ],
+      "id": "92b1a7b7-3205-4f3d-a9d1-2d2a326dc298",
+      "name": "Criar token de contexto",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_set_contexto_sessao\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            },
+            {
+              "name": "p_id_usuario_wa",
+              "value": "={{ $('When Executed by Another Workflow').item.json.id_wa_user }}"
+            },
+            {
+              "name": "p_sessao_token"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        4176,
+        1232
+      ],
+      "id": "170a4bfe-cc5f-4cee-bc65-710765248e16",
+      "name": "Iniciar sessão",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "errorMessage": "O id do usuário no whatstapp é obrigatório"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        3520,
+        1024
+      ],
+      "id": "5e92f025-f7a9-4723-b23d-ac74a44357cb",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Erro ao pegar o token de sessão"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        4768,
+        1248
+      ],
+      "id": "85b1cc0d-82a4-4b34-905b-2a38f3fcf520",
+      "name": "Stop and Error1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_selecionar_cadastro_por_id\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_sessao_token",
+              "value": "={{ $('Iniciar sessão').item.json.data }}"
+            },
+            {
+              "name": "p_id",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        5712,
+        1040
+      ],
+      "id": "28676973-5763-4a7c-b7d4-3fe20b1b0a59",
+      "name": "Consultar cadastro telefone1",
+      "alwaysOutputData": true,
+      "retryOnFail": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b199c68b-e250-4ad5-adda-72f021b72ff2",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        5216,
+        832
+      ],
+      "id": "c107fb70-2c05-4fa8-88e7-e82c46e0dca0",
+      "name": "If - Cadastro Existe?"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar token de contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token de contexto": {
+      "main": [
+        [
+          {
+            "node": "Iniciar sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iniciar sessão": {
+      "main": [
+        [
+          {
+            "node": "If - Retornou o token?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Retornou o token?": {
+      "main": [
+        [
+          {
+            "node": "setar session1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "setar session1": {
+      "main": [
+        [
+          {
+            "node": "Consultar cadastro telefone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar cadastro telefone": {
+      "main": [
+        [
+          {
+            "node": "If - Cadastro Existe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Cadastro Existe?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Criar cadastro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar cadastro": {
+      "main": [
+        [
+          {
+            "node": "Consultar cadastro telefone1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "2604e378-117e-46b7-bb13-7b432f815de1",
+  "meta": {
+    "instanceId": "e25bbeec66c82b0534f57d741f8d06c716df5d0bdb6b2b8e37a3ce75b72e2497"
+  },
+  "nodeGroups": [],
+  "id": "P1J0XYlwDALXrTFq",
+  "tags": [
+    {
+      "updatedAt": "2026-04-22T20:34:26.672Z",
+      "createdAt": "2026-04-22T20:34:26.672Z",
+      "id": "0igcNlFVpE5vLD0t",
+      "name": "REFATORADO COM S2S"
+    },
+    {
+      "updatedAt": "2026-04-20T18:42:55.819Z",
+      "createdAt": "2026-04-20T18:42:55.819Z",
+      "id": "rvY991tpgRZgNqOY",
+      "name": "CHATBOT -KORIS"
+    }
+  ]
+}

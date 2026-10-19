@@ -1,0 +1,1239 @@
+{
+  "name": "Consultar base de conhecimento",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_set_contexto_sessao\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            },
+            {
+              "name": "p_id_usuario_wa",
+              "value": "={{ $('When Executed by Another Workflow').item.json.p_wa_user_id }}"
+            },
+            {
+              "name": "p_sessao_token"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        16496,
+        3456
+      ],
+      "id": "c8503b5d-74b0-4f10-96d7-071b1f4dc69a",
+      "name": "Iniciar sessao",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "p_wa_user_id"
+            },
+            {
+              "name": "pergunta"
+            },
+            {
+              "name": "historico_recente"
+            },
+            {
+              "name": "numero_telefone"
+            },
+            {
+              "name": "id_mensagem"
+            },
+            {
+              "name": "account_id",
+              "type": "number"
+            },
+            {
+              "name": "inbox_id",
+              "type": "number"
+            },
+            {
+              "name": "conversation_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        16096,
+        3456
+      ],
+      "id": "72e8ffc8-36e5-4146-a564-c3ab297ef495",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_buscar_chunks_base_conhecimento_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_wa_user_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.p_wa_user_id }}"
+            },
+            {
+              "name": "p_embedding_pergunta",
+              "value": "={{ $('Gerar embedding OpenRouter do chunk').item.json.data[0].embedding }}"
+            },
+            {
+              "name": "p_top_k",
+              "value": "26"
+            },
+            {
+              "name": "p_sessao_token",
+              "value": "={{ $('Iniciar sessao').item.json.data }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $('Criar token buscar chunks').item.json.data }}"
+            },
+            {
+              "name": "p_pergunta_busca",
+              "value": "={{ $('Normalizar resolucao de busca').item.json.pergunta_busca }}"
+            },
+            {
+              "name": "p_documento_ativo_id",
+              "value": "={{ $('Normalizar resolucao de busca').item.json.documento_ativo_id }}"
+            },
+            {
+              "name": "p_usar_documento_ativo",
+              "value": "={{ $('Normalizar resolucao de busca').item.json.usar_documento_ativo }}"
+            },
+            {
+              "name": "p_top_documentos",
+              "value": "2"
+            },
+            {
+              "name": "p_chunks_por_documento",
+              "value": "3"
+            },
+            {
+              "name": "p_vizinhos",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        19360,
+        3488
+      ],
+      "id": "d6c29642-8757-4517-b057-e34591515161",
+      "name": "Consultar base de conhecimento",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Fluxo principal",
+        "height": 576,
+        "width": 3840,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16048,
+        3120
+      ],
+      "typeVersion": 1,
+      "id": "26010e66-8a82-4050-a519-2212bf1e3760",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"set_contexto\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        16304,
+        3456
+      ],
+      "id": "3bca8ca3-e5d6-48a3-9014-baae82b5d053",
+      "name": "Criar token de contexto",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"buscar_contexto_ia\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        16688,
+        3456
+      ],
+      "id": "b7aa54ff-4e37-4ffc-8697-4a18110c642a",
+      "name": "Criar token obter contexto IA",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function parseJsonSafe(value, fallback) {\n  if (!value) return fallback;\n  if (Array.isArray(value) || typeof value === 'object') return value;\n\n  try {\n    return JSON.parse(value);\n  } catch {\n    return fallback;\n  }\n}\n\nconst rawResponse = $input.first()?.json?.data ?? $input.first()?.json ?? [];\nconst chunks = parseJsonSafe(rawResponse, []);\n\nconst contextoIa = $('Obter contexto IA').first().json || {};\nconst resolucaoBusca = $('Normalizar resolucao de busca').first().json || {};\nconst sessaoToken = $('Iniciar sessao').first().json.data || null;\n\nconst total_tokens_contextoIA = Number(resolucaoBusca.total_tokens_resolucao_busca || 0);\nlet total_tokens_embeddings = 0;\ntry {\n  total_tokens_embeddings = Number($('Gerar embedding OpenRouter do chunk').first().json.usage?.total_tokens || 0);\n} catch {}\nconst total_tokens = total_tokens_contextoIA + total_tokens_embeddings;\n\nconst metadata = {\n  _rag_contextual: true,\n  sessao_token: sessaoToken,\n  contexto_ia: contextoIa,\n  resolucao_busca: resolucaoBusca,\n  pergunta_busca: resolucaoBusca.pergunta_busca || $('When Executed by Another Workflow').first().json.pergunta || '',\n  pergunta_original: resolucaoBusca.pergunta_original || $('When Executed by Another Workflow').first().json.pergunta || '',\n  consultar_base_conhecimento: Boolean(resolucaoBusca.consultar_base_conhecimento),\n  tipo_intencao: resolucaoBusca.tipo_intencao || null,\n  metodo_busca: resolucaoBusca.metodo_busca || null,\n  identificadores_fortes: Array.isArray(resolucaoBusca.identificadores_fortes) ? resolucaoBusca.identificadores_fortes : [],\n  documentos_apresentados: Array.isArray(resolucaoBusca.documentos_apresentados) ? resolucaoBusca.documentos_apresentados : [],\n  documentos_rejeitados: Array.isArray(resolucaoBusca.documentos_rejeitados) ? resolucaoBusca.documentos_rejeitados : [],\n  usar_documento_ativo: Boolean(resolucaoBusca.usar_documento_ativo),\n  documento_ativo_id: resolucaoBusca.documento_ativo_id || null,\n  documento_ativo_titulo: resolucaoBusca.documento_ativo_titulo || null,\n  precisa_clarificacao: Boolean(resolucaoBusca.precisa_clarificacao),\n  pergunta_clarificacao: resolucaoBusca.pergunta_clarificacao || null,\n  assunto_ativo: resolucaoBusca.assunto_ativo || null,\n  entidades_ativas: resolucaoBusca.entidades_ativas || {},\n  total_tokens_contexto_busca: total_tokens,\n  debug_busca_chunks: {\n    metodo_busca: resolucaoBusca.metodo_busca || null,\n    usou_embedding: total_tokens_embeddings > 0,\n    total_tokens_resolucao_busca: total_tokens_contextoIA,\n    total_tokens_embeddings\n  }\n};\n\nif (!Array.isArray(chunks) || chunks.length === 0) {\n  return [\n    {\n      json: {\n        _tipo: 'sem_chunks',\n        conteudo: null,\n        ...metadata\n      }\n    }\n  ];\n}\n\nreturn chunks.map(item => ({\n  json: {\n    ...item,\n    ...metadata\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        19664,
+        3488
+      ],
+      "id": "1b1a502a-e81f-40d3-848c-15034f0ff037",
+      "name": "Retornar resposta"
+    },
+    {
+      "parameters": {
+        "content": "## Gerando embedding",
+        "height": 336,
+        "width": 304,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        18704,
+        3328
+      ],
+      "typeVersion": 1,
+      "id": "1c4a857f-d0c3-48c4-b93a-2fc3b9ec18fb",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Iniciando sessão com o id do usuário do whatsapp",
+        "height": 336,
+        "width": 624,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16240,
+        3328
+      ],
+      "typeVersion": 1,
+      "id": "f7036a1d-d962-4876-9e27-d2a17522fb31",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Resolver inteção da pergunta",
+        "height": 336,
+        "width": 800,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16896,
+        3328
+      ],
+      "typeVersion": 1,
+      "id": "1aa37ca3-96cc-4a0b-9713-ea7ebeb5f265",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_obter_contexto_ia_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_wa_user_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.p_wa_user_id }}"
+            },
+            {
+              "name": "p_sessao_token",
+              "value": "={{ $('Iniciar sessao').item.json.data }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $('Criar token obter contexto IA').item.json.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        16960,
+        3456
+      ],
+      "id": "92353c31-14ed-4eb5-8e8c-08878e536de3",
+      "name": "Obter contexto IA",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function parseJsonSafe(value, fallback) {\n  if (!value) return fallback;\n  if (Array.isArray(value) || typeof value === 'object') return value;\n  try { return JSON.parse(value); } catch { return fallback; }\n}\n\nconst clean = (value) => String(value || '').trim();\nconst entrada = $('When Executed by Another Workflow').first().json || {};\nconst perguntaAtual = clean(entrada.pergunta);\nconst contextoAtivo = $input.first().json || {};\nconst entidadesAtivas = contextoAtivo.entidades_ativas && typeof contextoAtivo.entidades_ativas === 'object'\n  ? contextoAtivo.entidades_ativas\n  : {};\nconst historico = parseJsonSafe(entrada.historico_recente || '[]', [])\n  .map((item) => item.json || item)\n  .filter((item) => item && clean(item.mensagem))\n  .slice(-6)\n  .map((item) => ({ mensagem: clean(item.mensagem) }));\n\nconst schema = {\n  type: 'object',\n  additionalProperties: false,\n  properties: {\n    tipo_intencao: {\n      type: 'string',\n      enum: ['historico', 'institucional', 'busca_servico', 'mostrar_mais_empresarios', 'cadastro', 'atendimento_humano', 'fora_escopo', 'clarificacao']\n    },\n    dominio_busca: { type: 'string', enum: ['nenhum', 'institucional', 'empresarios'] },\n    modo_contexto: { type: 'string', enum: ['nova_busca', 'continuar_busca', 'sem_busca'] },\n    consultar_base_conhecimento: { type: 'boolean' },\n    metodo_busca: { type: 'string', enum: ['nenhum', 'vetorial', 'lexical', 'hibrido'] },\n    pergunta_busca: { type: 'string' },\n    necessidade: { type: 'string' },\n    resposta_espera: { type: 'string' },\n    precisa_clarificacao: { type: 'boolean' },\n    pergunta_clarificacao: { type: 'string' },\n    categoria_servico: { type: 'string' },\n    assunto_ativo: { type: 'string' },\n    entidades_ativas: {\n      type: 'object',\n      additionalProperties: false,\n      properties: {\n        profissao: { type: 'string' },\n        categoria: { type: 'string' },\n        servico: { type: 'string' },\n        problema: { type: 'string' },\n        empresa: { type: 'string' },\n        produto: { type: 'string' }\n      },\n      required: ['profissao', 'categoria', 'servico', 'problema', 'empresa', 'produto']\n    },\n    identificadores_fortes: { type: 'array', items: { type: 'string' } },\n    usar_documento_ativo: { type: 'boolean' },\n    motivo: { type: 'string' }\n  },\n  required: [\n    'tipo_intencao', 'dominio_busca', 'modo_contexto', 'consultar_base_conhecimento', 'metodo_busca',\n    'pergunta_busca', 'necessidade', 'resposta_espera', 'precisa_clarificacao',\n    'pergunta_clarificacao', 'categoria_servico', 'assunto_ativo', 'entidades_ativas',\n    'identificadores_fortes', 'usar_documento_ativo', 'motivo'\n  ]\n};\n\nconst body = {\n  model: 'google/gemini-2.5-flash',\n  temperature: 0,\n  max_tokens: 800,\n  reasoning: { enabled: false },\n  response_format: {\n    type: 'json_schema',\n    json_schema: {\n      name: 'elo_triagem_busca',\n      strict: true,\n      schema\n    }\n  },\n  messages: [\n    {\n      role: 'system',\n      content: [\n        'Você faz somente a triagem da Elo Connect e não responde diretamente ao usuário.',\n        'Preencha exatamente o schema solicitado. Use string vazia quando um campo textual não se aplicar.',\n        'tipo_intencao classifica a mensagem. dominio_busca vale empresarios somente para busca de profissional, empresa, produto ou serviço; institucional somente para informações oficiais da Elo.',\n        'Use mostrar_mais_empresarios quando o usuário pedir os resultados restantes da última busca.',\n        'modo_contexto é nova_busca quando a mensagem contém um pedido completo ou muda a profissão, categoria, serviço ou problema pesquisado. Nesse caso, ignore totalmente a pesquisa anterior.',\n        'modo_contexto é continuar_busca somente para resposta curta a uma pergunta de esclarecimento, referência explícita à busca anterior ou pedido para mostrar mais. Uma busca já concluída não deve influenciar uma nova solicitação.',\n        'modo_contexto é sem_busca quando a intenção não é pesquisa de empresários.',\n        'Quando a mensagem informar apenas uma atividade ampla e não houver dados suficientes para distinguir a necessidade, faça uma única pergunta objetiva de esclarecimento.',\n        'Se existe busca_empresarios pendente e a mensagem apenas complementa o que faltava, use continuar_busca, busca_servico e não faça uma segunda pergunta. Se a mensagem traz um novo pedido autônomo, use nova_busca e não combine os assuntos.',\n        'pergunta_busca deve ser uma única frase natural e coerente para busca textual e semântica, com no máximo 20 palavras e 160 caracteres.',\n        'Não produza listas de sinônimos, palavras separadas por vírgula, repetições, atributos comerciais, qualidades pessoais ou associações religiosas.',\n        'necessidade descreve objetivamente o problema, serviço ou resultado procurado. categoria_servico é texto livre e deve preservar a atividade informada pelo usuário, sem escolher valores de uma lista fechada.',\n        'pergunta_busca deve representar a necessidade completa em linguagem natural; categoria_servico pode registrar a atividade mencionada, sem controlar a pesquisa.',\n        'Toda a operação é de Blumenau/SC. Nunca pergunte, extraia ou use cidade e estado para filtrar ou ranquear empresários.',\n        'Pedidos que dependem somente do histórico usam historico e domínio nenhum.',\n        'Nunca invente empresário, documento ou dado. Preserve somente entidades realmente presentes na mensagem ou no contexto.'\n      ].join('\\n')\n    },\n    {\n      role: 'user',\n      content: JSON.stringify({\n        mensagem_atual: perguntaAtual,\n        contexto_ativo: {\n          assunto_ativo: contextoAtivo.assunto_ativo || null,\n          entidades_ativas: entidadesAtivas,\n          ultima_pergunta: contextoAtivo.ultima_pergunta || null,\n          ultima_resposta: contextoAtivo.ultima_resposta || null\n        },\n        historico\n      })\n    }\n  ]\n};\n\nreturn [{ json: {\n  pergunta_atual: perguntaAtual,\n  contexto_ativo: contextoAtivo,\n  mensagens_recentes: historico,\n  body_resolucao_busca: body\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        17152,
+        3456
+      ],
+      "id": "0fc085e6-74b7-4ae7-8191-1df152839760",
+      "name": "Montar payload resolucao de busca"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body_resolucao_busca }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        17344,
+        3456
+      ],
+      "id": "587261f1-e18f-401b-b9dd-3e3dc194cbb3",
+      "name": "Resolver intencao de busca",
+      "retryOnFail": true,
+      "credentials": {
+        "openRouterApi": {
+          "id": "oKqp4vNNKw0DgTNr",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const clean = (value) => String(value || '').trim();\nconst parse = (value, fallback = null) => {\n  if (!value) return fallback;\n  if (typeof value === 'object') return value;\n  const text = String(value).trim();\n  try { return JSON.parse(text); } catch {}\n  const match = text.match(/\\{[\\s\\S]*\\}/);\n  if (match) { try { return JSON.parse(match[0]); } catch {} }\n  return fallback;\n};\nconst normalizarConsulta = (value, fallback) => {\n  const texto = clean(value).replace(/\\s+/g, ' ');\n  if (!texto || texto.length > 240) return clean(fallback);\n  const partes = texto.split(/[,;|]+/).map(clean).filter(Boolean);\n  if (partes.length > 8) return clean(fallback);\n  const unicas = new Set(partes.map((item) => item.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()));\n  if (partes.length >= 4 && unicas.size / partes.length < 0.75) return clean(fallback);\n  return texto;\n};\nconst compactarEntidades = (value) => {\n  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};\n  return Object.fromEntries(Object.entries(value).filter(([, item]) => clean(item)));\n};\n\nconst payload = $('Montar payload resolucao de busca').first().json || {};\nconst contexto = payload.contexto_ativo || {};\nconst entidadesContexto = contexto.entidades_ativas && typeof contexto.entidades_ativas === 'object'\n  ? contexto.entidades_ativas\n  : {};\nconst content = $json.choices?.[0]?.message?.content || '';\nconst finishReason = clean($json.choices?.[0]?.finish_reason).toLowerCase();\nconst nativeFinishReason = clean($json.choices?.[0]?.native_finish_reason).toUpperCase();\nconst respostaTruncada = finishReason === 'length' || nativeFinishReason === 'MAX_TOKENS';\nconst parsedResponse = respostaTruncada ? null : parse(content, null);\nconst parsed = parsedResponse && typeof parsedResponse === 'object' && !Array.isArray(parsedResponse)\n  ? parsedResponse\n  : {};\nconst usage = $json.usage || {};\nconst permitidos = ['historico','institucional','busca_servico','mostrar_mais_empresarios','cadastro','atendimento_humano','fora_escopo','clarificacao'];\nconst dominios = ['nenhum','institucional','empresarios'];\nconst modosContexto = ['nova_busca','continuar_busca','sem_busca'];\nconst metodos = ['nenhum','vetorial','lexical','hibrido'];\nconst pergunta = clean(payload.pergunta_atual);\n\nlet tipo = clean(parsed.tipo_intencao).toLowerCase();\nif (!permitidos.includes(tipo)) tipo = 'historico';\nlet dominio = clean(parsed.dominio_busca).toLowerCase();\nif (!dominios.includes(dominio)) {\n  dominio = ['busca_servico','mostrar_mais_empresarios'].includes(tipo)\n    ? 'empresarios'\n    : (tipo === 'institucional' ? 'institucional' : 'nenhum');\n}\n\nconst estadoBusca = entidadesContexto.busca_empresarios && typeof entidadesContexto.busca_empresarios === 'object'\n  ? entidadesContexto.busca_empresarios\n  : null;\nconst pedidoMaisDeterministico = /\\b(mostrar|ver|quero|mande|envie|exibir|exiba)\\b.*\\b(mais|restante|resto|outro|outros)\\b/i.test(pergunta);\nconst pedidoNovoDeterministico = /\\b(me indique|indique|indicação|procuro|busco|(?:eu\\s+)?quero(?!\\s+(?:mais|ver|mostrar))|preciso de|encontre|empresas? que|profissionais? que)\\b/i.test(pergunta);\nlet modoContexto = clean(parsed.modo_contexto).toLowerCase();\nif (!modosContexto.includes(modoContexto)) {\n  modoContexto = tipo === 'busca_servico' ? 'nova_busca' : 'sem_busca';\n}\nif (pedidoMaisDeterministico && estadoBusca?.resultados?.length) {\n  tipo = 'mostrar_mais_empresarios';\n  dominio = 'empresarios';\n  modoContexto = 'continuar_busca';\n} else if (tipo === 'busca_servico' && pedidoNovoDeterministico) {\n  modoContexto = 'nova_busca';\n}\nconst buscaPendenteRespondida = Boolean(\n  estadoBusca?.pendente &&\n  pergunta &&\n  !pedidoMaisDeterministico &&\n  modoContexto === 'continuar_busca'\n);\nif (buscaPendenteRespondida) {\n  tipo = 'busca_servico';\n  dominio = 'empresarios';\n}\nif (tipo === 'busca_servico' && !buscaPendenteRespondida) modoContexto = 'nova_busca';\nif (!['busca_servico','mostrar_mais_empresarios'].includes(tipo)) modoContexto = 'sem_busca';\n\nconst consultaModelo = normalizarConsulta(parsed.pergunta_busca, pergunta);\nconst necessidade = normalizarConsulta(parsed.necessidade, buscaPendenteRespondida ? pergunta : '');\nconst entidadesBase = { ...entidadesContexto };\nif (modoContexto === 'nova_busca') delete entidadesBase.busca_empresarios;\nconst entidadesParsed = compactarEntidades(parsed.entidades_ativas);\nconst entidadesAtivas = { ...entidadesBase, ...entidadesParsed, tipo_intencao: tipo, dominio_busca: dominio };\nconst consultar = dominio === 'institucional' || (dominio === 'empresarios' && tipo !== 'clarificacao');\nlet metodo = clean(parsed.metodo_busca).toLowerCase();\nif (!metodos.includes(metodo)) metodo = dominio === 'institucional' ? 'vetorial' : (dominio === 'empresarios' ? 'hibrido' : 'nenhum');\nconst triagemValida = !respostaTruncada && permitidos.includes(clean(parsed.tipo_intencao).toLowerCase());\n\nreturn [{ json: {\n  pergunta_original: pergunta,\n  pergunta_busca: consultaModelo || pergunta,\n  consulta_semantica: consultaModelo || pergunta,\n  necessidade: necessidade || null,\n  resposta_espera: clean(parsed.resposta_espera) || null,\n  tipo_intencao: tipo,\n  dominio_busca: dominio,\n  modo_contexto: modoContexto,\n  consultar_base_conhecimento: consultar,\n  metodo_busca: metodo,\n  categoria_servico: clean(parsed.categoria_servico) || null,\n  cidade: null,\n  estado: null,\n  precisa_clarificacao: buscaPendenteRespondida ? false : Boolean(parsed.precisa_clarificacao || tipo === 'clarificacao'),\n  pergunta_clarificacao: clean(parsed.pergunta_clarificacao) || null,\n  assunto_ativo: clean(parsed.assunto_ativo) || (modoContexto === 'nova_busca' ? pergunta : clean(contexto.assunto_ativo)) || pergunta,\n  entidades_ativas: entidadesAtivas,\n  documento_ativo_id: dominio === 'institucional' ? (contexto.documento_ativo_id || null) : null,\n  documento_ativo_titulo: dominio === 'institucional' ? (contexto.documento_ativo_titulo || null) : null,\n  usar_documento_ativo: Boolean(dominio === 'institucional' && parsed.usar_documento_ativo && contexto.documento_ativo_id),\n  identificadores_fortes: Array.isArray(parsed.identificadores_fortes)\n    ? [...new Set(parsed.identificadores_fortes.map(clean).filter(Boolean))].slice(0, 8)\n    : [],\n  documentos_apresentados: Array.isArray(entidadesAtivas.documentos_apresentados) ? entidadesAtivas.documentos_apresentados : [],\n  documentos_rejeitados: Array.isArray(entidadesAtivas.documentos_rejeitados) ? entidadesAtivas.documentos_rejeitados : [],\n  motivo: clean(parsed.motivo) || (respostaTruncada ? 'Resposta da triagem truncada; consulta original preservada.' : 'Triagem sem JSON válido; consulta original preservada.'),\n  triagem_valida: triagemValida,\n  resposta_truncada: respostaTruncada,\n  total_tokens_resolucao_busca: Number(usage.total_tokens || 0)\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        17536,
+        3456
+      ],
+      "id": "a4c8f3d0-38e2-4a60-9d75-cb24e8441c30",
+      "name": "Normalizar resolucao de busca"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"buscar_contexto_ia\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        19120,
+        3488
+      ],
+      "id": "8b3baccc-d38c-4d7d-babf-bbb2dae21049",
+      "name": "Criar token buscar chunks",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Consultar base de conhecimento",
+        "height": 400,
+        "width": 496,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        19040,
+        3264
+      ],
+      "typeVersion": 1,
+      "id": "871e29a7-8878-44ef-9098-7fd8cb5fb044",
+      "name": "Sticky Note - RAG contextual"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    model: 'openai/text-embedding-3-small',\n    dimensions: 384,\n    input: $('Normalizar resolucao de busca').item.json.pergunta_busca\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        18800,
+        3488
+      ],
+      "id": "6994f48c-cccf-4012-9a1a-329d74bd709e",
+      "name": "Gerar embedding OpenRouter do chunk",
+      "credentials": {
+        "openRouterApi": {
+          "id": "oKqp4vNNKw0DgTNr",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "REmXwk0LIwSfPoHu",
+          "mode": "list",
+          "cachedResultName": "Control de tempo de respostas da IA",
+          "cachedResultUrl": "/projects/kFjpV2rMdVif9iQ9/datatables/REmXwk0LIwSfPoHu"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "em análise",
+            "numero": "={{ $('When Executed by Another Workflow').item.json.numero_telefone }}",
+            "id_mensagem_recebida": "={{ $('When Executed by Another Workflow').item.json.id_mensagem }}",
+            "resposta_espera": "={{ $json.resposta_espera }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "numero",
+              "displayName": "numero",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "id_mensagem_recebida",
+              "displayName": "id_mensagem_recebida",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "resposta_espera",
+              "displayName": "resposta_espera",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "excluir",
+              "displayName": "excluir",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        18016,
+        3472
+      ],
+      "id": "b30cd76f-9903-4b87-9691-c3f069e040c0",
+      "name": "Inserir linha para controle e análise do tempo de resposta da ia",
+      "alwaysOutputData": true,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "77XkagBDNFwaG0EQ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/77XkagBDNFwaG0EQ",
+          "cachedResultName": "Enviar mensagem notificando que a IA está analisando"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_mensagem": "={{ $json.id_mensagem_recebida }}",
+            "numero": "={{ $json.numero }}",
+            "account_id": "={{ $('When Executed by Another Workflow').first().json.account_id }}",
+            "inbox_id": "={{ $('When Executed by Another Workflow').first().json.inbox_id }}",
+            "conversation_id": "={{ $('When Executed by Another Workflow').first().json.conversation_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id_mensagem",
+              "displayName": "id_mensagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "numero",
+              "displayName": "numero",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "account_id",
+              "displayName": "account_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "inbox_id",
+              "displayName": "inbox_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "conversation_id",
+              "displayName": "conversation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        18240,
+        3472
+      ],
+      "id": "30b98da2-0b2e-4947-8a96-0e9b87e5ea1b",
+      "name": "Call 'Enviar mensagem notificando que a IA está analisando'",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Controle de tempo de resposta",
+        "height": 336,
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        17952,
+        3328
+      ],
+      "typeVersion": 1,
+      "id": "8e5119b3-d4d5-4855-bd6e-61b8adc9fdfa",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8fe555fb-bc73-4312-9ed9-64e5fc527d48",
+              "leftValue": "={{ $json.consultar_base_conhecimento === false }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        17776,
+        3456
+      ],
+      "id": "545be2bf-aad0-45db-8ebd-91248e70a1c1",
+      "name": "IF - Pular consulta base?"
+    },
+    {
+      "parameters": {
+        "jsCode": "function cleanText(value) {\n  return String(value || '').trim();\n}\n\nconst contextoIa = $('Obter contexto IA').first().json || {};\nconst resolucaoBusca = $('Normalizar resolucao de busca').first().json || $json || {};\nconst sessaoToken = $('Iniciar sessao').first().json.data || null;\nconst entrada = $('When Executed by Another Workflow').first().json || {};\n\nconst totalTokens = Number(resolucaoBusca.total_tokens_resolucao_busca || 0);\n\nreturn [\n  {\n    json: {\n      _tipo: 'sem_consulta_base',\n      conteudo: null,\n      _rag_contextual: false,\n      consultar_base_conhecimento: false,\n      tipo_intencao: resolucaoBusca.tipo_intencao || 'historico',\n      metodo_busca: resolucaoBusca.metodo_busca || 'nenhum',\n      sessao_token: sessaoToken,\n      contexto_ia: contextoIa,\n      resolucao_busca: resolucaoBusca,\n      pergunta_busca: resolucaoBusca.pergunta_busca || entrada.pergunta || '',\n      pergunta_original: resolucaoBusca.pergunta_original || entrada.pergunta || '',\n      usar_documento_ativo: Boolean(resolucaoBusca.usar_documento_ativo),\n      documento_ativo_id: resolucaoBusca.documento_ativo_id || null,\n      documento_ativo_titulo: resolucaoBusca.documento_ativo_titulo || null,\n      precisa_clarificacao: Boolean(resolucaoBusca.precisa_clarificacao),\n      pergunta_clarificacao: resolucaoBusca.pergunta_clarificacao || null,\n      assunto_ativo: resolucaoBusca.assunto_ativo || null,\n      entidades_ativas: resolucaoBusca.entidades_ativas || {},\n      identificadores_fortes: Array.isArray(resolucaoBusca.identificadores_fortes) ? resolucaoBusca.identificadores_fortes : [],\n      documentos_apresentados: Array.isArray(resolucaoBusca.documentos_apresentados) ? resolucaoBusca.documentos_apresentados : [],\n      documentos_rejeitados: Array.isArray(resolucaoBusca.documentos_rejeitados) ? resolucaoBusca.documentos_rejeitados : [],\n      documentos: [],\n      total_tokens_contexto_busca: totalTokens,\n      debug_sem_consulta_base: {\n        motivo: cleanText(resolucaoBusca.motivo),\n        preservou_documento_ativo: Boolean(resolucaoBusca.documento_ativo_id),\n        total_tokens_resolucao_busca: totalTokens\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        18240,
+        3168
+      ],
+      "id": "db7db3c1-0837-4064-bd8f-a5842ff87730",
+      "name": "Retornar sem consulta base"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"buscar_contexto_ia\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        19120,
+        3328
+      ],
+      "id": "d32e72c4-c6c8-40a1-973f-62e567c31445",
+      "name": "Criar token buscar chunks lexical",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_buscar_chunks_base_conhecimento_texto_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_wa_user_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.p_wa_user_id }}"
+            },
+            {
+              "name": "p_termos",
+              "value": "={{ $('Normalizar resolucao de busca').item.json.identificadores_fortes || [] }}"
+            },
+            {
+              "name": "p_top_k",
+              "value": "26"
+            },
+            {
+              "name": "p_sessao_token",
+              "value": "={{ $('Iniciar sessao').item.json.data }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $('Criar token buscar chunks lexical').item.json.data }}"
+            },
+            {
+              "name": "p_documento_ativo_id",
+              "value": "={{ $('Normalizar resolucao de busca').item.json.documento_ativo_id }}"
+            },
+            {
+              "name": "p_usar_documento_ativo",
+              "value": "={{ $('Normalizar resolucao de busca').item.json.usar_documento_ativo }}"
+            },
+            {
+              "name": "p_chunks_por_documento",
+              "value": "3"
+            },
+            {
+              "name": "p_vizinhos",
+              "value": "1"
+            },
+            {
+              "name": "p_documentos_rejeitados",
+              "value": "={{ $('Normalizar resolucao de busca').item.json.documentos_rejeitados || [] }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        19344,
+        3328
+      ],
+      "id": "44bf7006-1176-4c2d-93f7-53c8a445f604",
+      "name": "Consultar base de conhecimento lexical",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5c6dad40-4980-4ea8-b83c-92a90efe114a",
+              "leftValue": "={{ ['lexical', 'hibrido'].includes(String($('Normalizar resolucao de busca').item.json.metodo_busca || '').toLowerCase()) && Array.isArray($('Normalizar resolucao de busca').item.json.identificadores_fortes) && $('Normalizar resolucao de busca').item.json.identificadores_fortes.length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        18512,
+        3472
+      ],
+      "id": "45ba6f52-5f66-4509-a444-6c138ea3acdc",
+      "name": "IF - Busca lexical?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "27e5dff0-457e-4435-b6fb-eb7a27eb7683",
+              "leftValue": "={{ $json.dominio_busca === 'empresarios' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "83baf295-769d-406c-8fe5-cfd5110bb9b9",
+      "name": "IF - Busca de empresários?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "5Yk2cD9mR7pQ1sV8",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/5Yk2cD9mR7pQ1sV8",
+          "cachedResultName": "Pesquisar empresários"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "p_wa_user_id": "={{ $('When Executed by Another Workflow').first().json.p_wa_user_id }}",
+            "pergunta": "={{ $('When Executed by Another Workflow').first().json.pergunta }}",
+            "resolucao_busca": "={{ JSON.stringify($('Normalizar resolucao de busca').first().json) }}",
+            "contexto_ia": "={{ JSON.stringify($('Obter contexto IA').first().json || {}) }}",
+            "sessao_token": "={{ $('Iniciar sessao').first().json.data }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "p_wa_user_id",
+              "displayName": "p_wa_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "pergunta",
+              "displayName": "pergunta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "resolucao_busca",
+              "displayName": "resolucao_busca",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "contexto_ia",
+              "displayName": "contexto_ia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "sessao_token",
+              "displayName": "sessao_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "109ba790-edca-4d98-996c-ff4270b3c1c3",
+      "name": "Call 'Pesquisar empresários'",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1392,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Criar token de contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token de contexto": {
+      "main": [
+        [
+          {
+            "node": "Iniciar sessao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iniciar sessao": {
+      "main": [
+        [
+          {
+            "node": "Criar token obter contexto IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token obter contexto IA": {
+      "main": [
+        [
+          {
+            "node": "Obter contexto IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obter contexto IA": {
+      "main": [
+        [
+          {
+            "node": "Montar payload resolucao de busca",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar payload resolucao de busca": {
+      "main": [
+        [
+          {
+            "node": "Resolver intencao de busca",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver intencao de busca": {
+      "main": [
+        [
+          {
+            "node": "Normalizar resolucao de busca",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar resolucao de busca": {
+      "main": [
+        [
+          {
+            "node": "IF - Busca de empresários?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token buscar chunks": {
+      "main": [
+        [
+          {
+            "node": "Consultar base de conhecimento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar base de conhecimento": {
+      "main": [
+        [
+          {
+            "node": "Retornar resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar embedding OpenRouter do chunk": {
+      "main": [
+        [
+          {
+            "node": "Criar token buscar chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inserir linha para controle e análise do tempo de resposta da ia": {
+      "main": [
+        [
+          {
+            "node": "Call 'Enviar mensagem notificando que a IA está analisando'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Enviar mensagem notificando que a IA está analisando'": {
+      "main": [
+        [
+          {
+            "node": "IF - Busca lexical?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Pular consulta base?": {
+      "main": [
+        [
+          {
+            "node": "Retornar sem consulta base",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Inserir linha para controle e análise do tempo de resposta da ia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Busca lexical?": {
+      "main": [
+        [
+          {
+            "node": "Criar token buscar chunks lexical",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gerar embedding OpenRouter do chunk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token buscar chunks lexical": {
+      "main": [
+        [
+          {
+            "node": "Consultar base de conhecimento lexical",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar base de conhecimento lexical": {
+      "main": [
+        [
+          {
+            "node": "Retornar resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Busca de empresários?": {
+      "main": [
+        [
+          {
+            "node": "Call 'Pesquisar empresários'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF - Pular consulta base?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e754fd37-4cda-4b5c-bd63-842a4fc91253",
+  "meta": {
+    "instanceId": "e25bbeec66c82b0534f57d741f8d06c716df5d0bdb6b2b8e37a3ce75b72e2497"
+  },
+  "id": "wcxxSuu45F89V3LD",
+  "tags": [
+    {
+      "updatedAt": "2026-04-22T20:34:26.672Z",
+      "createdAt": "2026-04-22T20:34:26.672Z",
+      "id": "0igcNlFVpE5vLD0t",
+      "name": "REFATORADO COM S2S"
+    },
+    {
+      "updatedAt": "2026-04-20T18:42:55.819Z",
+      "createdAt": "2026-04-20T18:42:55.819Z",
+      "id": "rvY991tpgRZgNqOY",
+      "name": "CHATBOT -KORIS"
+    }
+  ]
+}

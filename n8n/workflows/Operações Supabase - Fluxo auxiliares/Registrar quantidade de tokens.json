@@ -1,0 +1,247 @@
+{
+  "name": "Registrar quantidade de tokens",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "p_cadastro_id"
+            },
+            {
+              "name": "p_wa_id"
+            },
+            {
+              "name": "p_tokens",
+              "type": "number"
+            },
+            {
+              "name": "p_mensagem_id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c495d98a-40da-4076-96b8-03278352b944",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"registrar_tokens\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        0
+      ],
+      "id": "c9007389-f3fd-457b-8351-1ec5d6bf4934",
+      "name": "Criar token de contexto",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_set_contexto_sessao\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            },
+            {
+              "name": "p_id_usuario_wa",
+              "value": "={{ $('When Executed by Another Workflow').item.json.p_wa_id }}"
+            },
+            {
+              "name": "p_sessao_token"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        432,
+        0
+      ],
+      "id": "7df90df9-89e3-45f2-ba45-341d7039f82e",
+      "name": "Iniciar sessão",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Elo Connect - API Service Role"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Iniciar sessão com usuário solicitante",
+        "height": 304,
+        "width": 432,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        160,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "c4fb3ba3-ac7f-40dc-a9d0-ef8255c9ff9c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Registrar tokens para o usuário",
+        "height": 304,
+        "width": 272,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        624,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "4d3cbc58-a50e-4325-af90-d75d051660dc",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_registrar_tokens\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_cadastro_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.p_cadastro_id }}"
+            },
+            {
+              "name": "p_wa_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.p_wa_id }}"
+            },
+            {
+              "name": "p_tokens",
+              "value": "={{ $('When Executed by Another Workflow').item.json.p_tokens }}"
+            },
+            {
+              "name": "p_mensagem_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.p_mensagem_id }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $('Criar token de contexto').item.json.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        704,
+        0
+      ],
+      "id": "2ed52304-e23f-46e9-9b5f-becc72e2842a",
+      "name": "Registrar quantidade de tokens",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Criar token de contexto": {
+      "main": [
+        [
+          {
+            "node": "Iniciar sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iniciar sessão": {
+      "main": [
+        [
+          {
+            "node": "Registrar quantidade de tokens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Criar token de contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3eebd930-a21a-4e96-9ad0-56d15d456b20",
+  "meta": {
+    "instanceId": "e25bbeec66c82b0534f57d741f8d06c716df5d0bdb6b2b8e37a3ce75b72e2497"
+  },
+  "id": "wmDNlobNIqXXjNFr",
+  "tags": []
+}

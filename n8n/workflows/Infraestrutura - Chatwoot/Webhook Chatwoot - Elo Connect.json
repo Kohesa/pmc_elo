@@ -1,0 +1,1859 @@
+{
+  "name": "Elo Connect - Entrada Chatwoot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot/elo",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "e7d7a08e-74aa-498d-a6d4-09a386ca1c22",
+      "name": "Webhook Chatwoot",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1552,
+        -192
+      ],
+      "webhookId": "4ab8d0aa-77b6-4f4c-a290-e10ca11be110"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "yGZGdruhvwp3n8EP",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/yGZGdruhvwp3n8EP",
+          "cachedResultName": "Cadastrar mensagem"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "payload": "={{ JSON.stringify({ p_mensagem_id: $('Normalizar evento Chatwoot').item.json.mensagem_persistencia_id, p_remetente_wa_user_id: $('Normalizar evento Chatwoot').first().json.wa_user_id, p_destinatario_wa_user_id: $('Normalizar evento Chatwoot').first().json.numero_empresa, p_mensagem: $('Unificar mensagem').item.json.mensagem, p_cliente_id: $json.cliente_id, p_horario_mensagem_api: $json.p_horario_mensagem_api }) }}",
+            "acao_realizada": "Erro ao tentar registrar mensagem no supabase",
+            "telefone_session": "={{ $('Normalizar evento Chatwoot').first().json.wa_user_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "payload",
+              "displayName": "payload",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "endpoint",
+              "displayName": "endpoint",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "apikey",
+              "displayName": "apikey",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Authorization",
+              "displayName": "Authorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "acao_realizada",
+              "displayName": "acao_realizada",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "telefone_session",
+              "displayName": "telefone_session",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2880,
+        256
+      ],
+      "id": "6e8e9d25-c3b1-4a9d-ae9a-cfb21954a4ee",
+      "name": "Registrar mensagem recebida",
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4ce3aeef-9430-4f8a-8b2b-814f4226f2b4",
+              "name": "cliente_id",
+              "value": "={{ $('Identificar número').item.json.cadastro_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1200,
+        -192
+      ],
+      "id": "e646a583-bac8-4712-b1ac-b073d7c01569",
+      "name": "Definir cadastro id"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "TiDVXNLaJPPVb8uO",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/TiDVXNLaJPPVb8uO",
+          "cachedResultName": "Conversa com IA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nome": "={{ $json.nome || $('Formatar dados').first().json.nome }}",
+            "mensagem": "={{ $('Unificar mensagem').first().json.mensagem }}",
+            "id_mensagem": "={{ $('Normalizar evento Chatwoot').first().json.mensagem_id }}",
+            "wa_user_id": "={{ $('Formatar dados').first().json.user_id_client }}",
+            "telefone": "={{ $('Formatar dados').first().json.telefone }}",
+            "cliente_id": "={{ $json.id }}",
+            "definicoes_usuario": "",
+            "conversation_id": "={{ $('Normalizar evento Chatwoot').first().json.conversation_id }}",
+            "account_id": "={{ $('Normalizar evento Chatwoot').first().json.account_id }}",
+            "inbox_id": "={{ $('Normalizar evento Chatwoot').first().json.inbox_id }}"
+          },
+          "matchingColumns": [
+            "nome"
+          ],
+          "schema": [
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "wa_user_id",
+              "displayName": "wa_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "mensagem",
+              "displayName": "mensagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id_mensagem",
+              "displayName": "id_mensagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "cliente_id",
+              "displayName": "cliente_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "definicoes_usuario",
+              "displayName": "definicoes_usuario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "conversation_id",
+              "displayName": "conversation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "account_id",
+              "displayName": "account_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "inbox_id",
+              "displayName": "inbox_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        4320,
+        -304
+      ],
+      "id": "cb88bc32-d03b-4431-8ac7-3eefc49fccc4",
+      "name": "Responder novo cadastro com IA"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { cliente_id: $input.first().json.cliente_id, mensagem: $('Normalizar evento Chatwoot').first().json.texto } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1824,
+        256
+      ],
+      "id": "9e7c7df7-2a0e-41b8-bfa0-e9baa60fee67",
+      "name": "Refinar mensagem"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ...$input.first().json, p_horario_mensagem_api: $('Normalizar evento Chatwoot').first().json.created_at } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2688,
+        256
+      ],
+      "id": "14bf5a6f-4613-4488-90b0-5609a6e27e95",
+      "name": "Refinar o timestamp para date"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Yqo66KPglnCzaVA4",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Yqo66KPglnCzaVA4",
+          "cachedResultName": "Atualizar status mensagem"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "mensagem_id": "={{ $('Normalizar evento Chatwoot').item.json.mensagem_persistencia_id.toString() }}",
+            "cliente_id": "={{ $json.cadastro_id }}",
+            "status_mensagem": "={{ $('Normalizar evento Chatwoot').first().json.status }}",
+            "id_user_whats": "={{ $('Formatar dados').item.json.user_id_client }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id_user_whats",
+              "displayName": "id_user_whats",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "mensagem_id",
+              "displayName": "mensagem_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "cliente_id",
+              "displayName": "cliente_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "status_mensagem",
+              "displayName": "status_mensagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        -448
+      ],
+      "id": "6bd49490-9618-41e8-8525-50c2e7a21916",
+      "name": "Call 'Atualizar status mensagem'"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3052af69-de5d-431b-a480-388ac273d479",
+              "leftValue": "={{ $('Normalizar evento Chatwoot').first().json.tipo_evento === 'status' }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        512,
+        -192
+      ],
+      "id": "2b42db6f-5565-403d-a05a-e98df8460fa8",
+      "name": "If - Status?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cliente_id = $json.cliente_id\nconst mensagem = $json.mensagem\n\nreturn {\n  cliente_id,\n  mensagem\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        256
+      ],
+      "id": "6dc6db2d-5cf6-4c6f-a9c3-5068d03cdbbe",
+      "name": "Unificar mensagem"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst item = $input.first();\nconst headers = Object.fromEntries(\n  Object.entries(item.json.headers ?? {}).map(([key, value]) => [key.toLowerCase(), value])\n);\nconst secret = String($env.N8N_CHATWOOT_WEBHOOK_SECRET || '');\nconst signatureHeader = headers['x-chatwoot-signature'];\nconst timestamp = String(headers['x-chatwoot-timestamp'] || '');\nconst reject = (reason, http_status = 401) => [{ json: { valid: false, reason, http_status } }];\n\nif (!secret) return reject('Segredo do webhook do Chatwoot não configurado.', 503);\nif (typeof signatureHeader !== 'string' || !/^sha256=[a-f0-9]{64}$/i.test(signatureHeader)) {\n  return reject('Cabeçalho X-Chatwoot-Signature ausente ou malformado.');\n}\nif (!/^\\d+$/.test(timestamp)) return reject('Cabeçalho X-Chatwoot-Timestamp ausente ou malformado.');\nconst seconds = Number(timestamp);\nif (!Number.isSafeInteger(seconds) || Math.abs(Math.floor(Date.now() / 1000) - seconds) > 300) {\n  return reject('Timestamp fora da janela de 5 minutos.');\n}\nlet rawBody;\ntry {\n  rawBody = await this.helpers.getBinaryDataBuffer(0, 'data');\n} catch {\n  return reject('Corpo bruto indisponível. Habilite Raw Body no webhook.', 503);\n}\nconst expected = crypto.createHmac('sha256', secret)\n  .update(timestamp + '.', 'utf8').update(rawBody).digest();\nconst received = Buffer.from(signatureHeader.slice(7), 'hex');\nif (received.length !== expected.length || !crypto.timingSafeEqual(received, expected)) {\n  return reject('Assinatura não confere.');\n}\nlet body;\ntry {\n  body = JSON.parse(rawBody.toString('utf8'));\n} catch {\n  return reject('Corpo assinado não contém JSON válido.', 400);\n}\nreturn [{ json: { valid: true, body } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1328,
+        -192
+      ],
+      "id": "bf51b9b8-f673-425d-a257-7505fe25b694",
+      "name": "validar assinatura"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82aef3ac-4bc8-456d-9072-37a9e12f7b9e",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1120,
+        -192
+      ],
+      "id": "3a7539dd-1157-41a4-a25d-fb06b690ee88",
+      "name": "If - Assinatura Válida?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"valid\": false,\n  \"status\": \"error\",\n  \"message\": \"Sem permissão de acesso.\"\n}",
+        "options": {
+          "responseCode": "={{ $json.http_status || 401 }}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -912,
+        -16
+      ],
+      "id": "fa3f24d8-fe2f-4f52-9d94-7dacd59f6cac",
+      "name": "Assinatura invalida"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"valid\": true,\n  \"status\": \"success\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -912,
+        -208
+      ],
+      "id": "13f353f3-247a-44a4-a97e-a1e8ac14f88b",
+      "name": "Assinatura valida"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "P1J0XYlwDALXrTFq",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/P1J0XYlwDALXrTFq",
+          "cachedResultName": "Criar ou pegar cadastro"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_wa_user": "={{ $('Formatar dados').item.json.user_id_client }}",
+            "telefone": "={{ $('Formatar dados').item.json.telefone }}",
+            "nome": "={{ $('Formatar dados').item.json.nome }}"
+          },
+          "matchingColumns": [
+            "id_wa_user"
+          ],
+          "schema": [
+            {
+              "id": "id_wa_user",
+              "displayName": "id_wa_user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        4080,
+        -288
+      ],
+      "id": "b9b6b7ab-0969-4519-9d13-63fcb45c65a8",
+      "name": "Call 'pegar ou criar cadastro id'",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Normalizar evento Chatwoot').first().json;\nreturn [{ json: {\n  nome: data.nome,\n  user_id_client: data.wa_user_id,\n  telefone: data.telefone,\n  remetente_id_use: data.wa_user_id,\n  destinatario_id_use: data.numero_empresa,\n  account_id: data.account_id,\n  inbox_id: data.inbox_id,\n  conversation_id: data.conversation_id\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        -192
+      ],
+      "id": "185dd99e-6a58-4966-8f3e-298e4ee5fd37",
+      "name": "Formatar dados"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"identificar\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        80,
+        -192
+      ],
+      "id": "2b2481bb-5269-4b6e-ab79-f149ebbb80c0",
+      "name": "Criar token de contexto",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_identificar_numero\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            },
+            {
+              "name": "p_id_usuario_wa",
+              "value": "={{ $('Formatar dados').item.json.user_id_client }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        288,
+        -192
+      ],
+      "id": "052a4f8e-c3c0-41c8-8d19-00909438b43f",
+      "name": "Identificar número",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "elo-cadastro-novo",
+                    "leftValue": "={{ $('Identificar número').item.json.tipo_acesso.toLowerCase() }}",
+                    "rightValue": "novo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Novo cadastro"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "elo-cadastro-aprovado",
+                    "leftValue": "={{ $('Identificar número').item.json.tipo_acesso.toLowerCase() }}",
+                    "rightValue": "aprovado",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cadastro aprovado"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "elo-cadastro-bloqueado",
+                    "leftValue": "={{ $('Identificar número').item.json.tipo_acesso.toLowerCase() }}",
+                    "rightValue": "bloqueado",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cadastro bloqueado"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        3600,
+        176
+      ],
+      "id": "d6a683c7-6027-4042-b72f-2a713645541f",
+      "name": "Switch - Caminho"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "zhPAKTVIiFaYtBoV",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/zhPAKTVIiFaYtBoV",
+          "cachedResultName": "Mensagens de fallback para o usuário - Elo"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "número": "={{ $('Formatar dados').item.json.telefone }}",
+            "nome": "=",
+            "account_id": "={{ $('Normalizar evento Chatwoot').first().json.account_id }}",
+            "inbox_id": "={{ $('Normalizar evento Chatwoot').first().json.inbox_id }}",
+            "conversation_id": "={{ $('Normalizar evento Chatwoot').first().json.conversation_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "número",
+              "displayName": "número",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "account_id",
+              "displayName": "account_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "inbox_id",
+              "displayName": "inbox_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "conversation_id",
+              "displayName": "conversation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        3136,
+        464
+      ],
+      "id": "a2b6fbdd-f257-45e6-a344-55e00c64549a",
+      "name": "Enviar mensagem de erro no whatsapp10"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Erro ao enviar mensagem de resposta para o usuário."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        464
+      ],
+      "id": "d59e8f24-ef68-4476-9554-e3866e398b87",
+      "name": "Stop and Error10"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "zhPAKTVIiFaYtBoV",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/zhPAKTVIiFaYtBoV",
+          "cachedResultName": "Mensagens de fallback para o usuário - Elo"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "número": "={{ $('Formatar dados').item.json.telefone }}",
+            "nome": "=",
+            "account_id": "={{ $('Normalizar evento Chatwoot').first().json.account_id }}",
+            "inbox_id": "={{ $('Normalizar evento Chatwoot').first().json.inbox_id }}",
+            "conversation_id": "={{ $('Normalizar evento Chatwoot').first().json.conversation_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "número",
+              "displayName": "número",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "account_id",
+              "displayName": "account_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "inbox_id",
+              "displayName": "inbox_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "conversation_id",
+              "displayName": "conversation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        4320,
+        -128
+      ],
+      "id": "88e893c7-a7fb-49da-8243-c28077dda09b",
+      "name": "Enviar mensagem de erro no whatsapp"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Erro ao enviar mensagem de resposta para o usuário."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        4512,
+        -128
+      ],
+      "id": "47f6a7ec-5b06-4aa8-911e-017ca5b94764",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "TiDVXNLaJPPVb8uO",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/TiDVXNLaJPPVb8uO",
+          "cachedResultName": "Conversa com IA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nome": "={{ $('Formatar dados').first().json.nome }}",
+            "mensagem": "={{ $('Unificar mensagem').first().json.mensagem }}",
+            "id_mensagem": "={{ $('Normalizar evento Chatwoot').first().json.mensagem_id }}",
+            "wa_user_id": "={{ $('Formatar dados').first().json.user_id_client }}",
+            "telefone": "={{ $('Formatar dados').first().json.telefone }}",
+            "cliente_id": "={{ $('Definir cadastro id').item.json.cliente_id }}",
+            "definicoes_usuario": "={{ $json.instrucoes_usuario }}",
+            "conversation_id": "={{ $('Normalizar evento Chatwoot').first().json.conversation_id }}",
+            "account_id": "={{ $('Normalizar evento Chatwoot').first().json.account_id }}",
+            "inbox_id": "={{ $('Normalizar evento Chatwoot').first().json.inbox_id }}"
+          },
+          "matchingColumns": [
+            "nome"
+          ],
+          "schema": [
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "wa_user_id",
+              "displayName": "wa_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "mensagem",
+              "displayName": "mensagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id_mensagem",
+              "displayName": "id_mensagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "cliente_id",
+              "displayName": "cliente_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "definicoes_usuario",
+              "displayName": "definicoes_usuario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "conversation_id",
+              "displayName": "conversation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "account_id",
+              "displayName": "account_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "inbox_id",
+              "displayName": "inbox_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        4496,
+        224
+      ],
+      "id": "97e42c16-850f-4a3e-8833-2cfff8d20b43",
+      "name": "Call 'Conversa com IA'"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_CHATWOOT_BASE_URL || '').replace(/\\/+$/, '') + '/api/v1/accounts/' + String($('Normalizar evento Chatwoot').first().json.account_id) + '/conversations/' + String($('Normalizar evento Chatwoot').first().json.conversation_id) + '/messages' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $env.N8N_CHATWOOT_API_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"Oops! Parece que seu acesso está temporariamente indisponível. Entre em contato com o responsável para liberar seu acesso.\",\n  \"message_type\": \"outgoing\",\n  \"private\": false,\n  \"content_type\": \"text\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4000,
+        560
+      ],
+      "id": "d85ef261-87c9-4655-8ba8-ddd1666c62c4",
+      "name": "Send message",
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "zhPAKTVIiFaYtBoV",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/zhPAKTVIiFaYtBoV",
+          "cachedResultName": "Mensagens de fallback para o usuário - Elo"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "número": "={{ $('Formatar dados').item.json.telefone }}",
+            "nome": "=",
+            "account_id": "={{ $('Normalizar evento Chatwoot').first().json.account_id }}",
+            "inbox_id": "={{ $('Normalizar evento Chatwoot').first().json.inbox_id }}",
+            "conversation_id": "={{ $('Normalizar evento Chatwoot').first().json.conversation_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "número",
+              "displayName": "número",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "account_id",
+              "displayName": "account_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "inbox_id",
+              "displayName": "inbox_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "conversation_id",
+              "displayName": "conversation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        4256,
+        720
+      ],
+      "id": "fd6febd2-d093-49b5-9d64-9bf7d086a665",
+      "name": "Enviar mensagem de erro no whatsapp11"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Erro ao enviar mensagem de resposta para o usuário."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        4496,
+        720
+      ],
+      "id": "fc6b1525-559b-4915-8195-d78dc1718e1e",
+      "name": "Stop and Error11"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "yGZGdruhvwp3n8EP",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/yGZGdruhvwp3n8EP",
+          "cachedResultName": "Cadastrar mensagem"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "payload": "={{ JSON.stringify({ p_mensagem_id: $('Send message').first().json.source_id || $('Send message').first().json.id || ('chatwoot_saida_' + Date.now()), p_remetente_wa_user_id: $('Normalizar evento Chatwoot').first().json.numero_empresa, p_destinatario_wa_user_id: $('Formatar dados').first().json.user_id_client, p_mensagem: 'Oops! Parece que seu acesso está temporariamente indisponível. Entre em contato com o responsável para liberar seu acesso.', p_cliente_id: $('Identificar número').first().json.cadastro_id, p_horario_mensagem_api: $now.toUTC().toISO() }) }}",
+            "acao_realizada": "Erro ao tentar registrar mensagem no supabase",
+            "telefone_session": "={{ $('Normalizar evento Chatwoot').first().json.wa_user_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "payload",
+              "displayName": "payload",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "endpoint",
+              "displayName": "endpoint",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "apikey",
+              "displayName": "apikey",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Authorization",
+              "displayName": "Authorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "acao_realizada",
+              "displayName": "acao_realizada",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "telefone_session",
+              "displayName": "telefone_session",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        4256,
+        544
+      ],
+      "id": "9a887653-577a-43f0-9b4d-3596e67cdccd",
+      "name": "Registrar mensagem de cadastro bloqueado",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "503c5601-e597-4e5a-9bda-d04578844d7c",
+              "leftValue": "={{ $('Normalizar evento Chatwoot').first().json.tipo_evento === 'mensagem' }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -464,
+        -208
+      ],
+      "id": "b86fd9e8-0270-4243-b8be-3c3966b0fd2e",
+      "name": "If - Mensagem recebida?"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { instrucoes_usuario: '' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4128,
+        224
+      ],
+      "id": "547430a0-9fd9-4675-bf4d-942f30fa1e9e",
+      "name": "Ajustar parametrização do usuário"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('validar assinatura').first().json.body;\nif (!body || typeof body !== 'object' || Array.isArray(body) || body.private === true) return [];\n\nconst isIncomingMessage = body.event === 'message_created' && body.message_type === 'incoming';\nconst isStatusUpdate = body.event === 'message_updated' && body.message_type === 'outgoing';\nif (!isIncomingMessage && !isStatusUpdate) return [];\n\nconst conversation = body.conversation && typeof body.conversation === 'object' ? body.conversation : {};\nconst accountId = Number(body.account?.id ?? conversation.account_id);\nconst inboxId = Number(body.inbox?.id ?? conversation.inbox_id);\nconst conversationId = Number(conversation.id);\nif (!Number.isSafeInteger(accountId) || !Number.isSafeInteger(inboxId) || !Number.isSafeInteger(conversationId)) {\n  throw new Error('Evento Chatwoot sem account_id, inbox_id ou conversation_id válido.');\n}\n\nconst configuredAccount = String($env.N8N_CHATWOOT_ACCOUNT_ID || '').trim();\nif (!configuredAccount) throw new Error('Configure N8N_CHATWOOT_ACCOUNT_ID.');\nif (String(accountId) !== configuredAccount) return [];\n\nconst configuredInboxes = String($env.N8N_CHATWOOT_INBOX_IDS || $env.N8N_CHATWOOT_INBOX_ID || '')\n  .split(',').map((value) => value.trim()).filter(Boolean);\nif (!configuredInboxes.length) throw new Error('Configure N8N_CHATWOOT_INBOX_IDS ou N8N_CHATWOOT_INBOX_ID.');\nif (!configuredInboxes.includes(String(inboxId))) return [];\n\nconst channel = String(conversation.channel || '').trim();\nif (!['Channel::WebWidget', 'Channel::Whatsapp'].includes(channel)) return [];\n\nconst sender = body.sender && typeof body.sender === 'object' ? body.sender : {};\nconst contact = conversation.meta?.sender && typeof conversation.meta.sender === 'object'\n  ? conversation.meta.sender : sender;\nconst contactInboxSource = String(conversation.contact_inbox?.source_id || '').trim();\nconst contactId = String(contact.id || '').trim();\nconst externalContactId = contactInboxSource || contactId || String(conversationId);\nconst phone = String(contact.phone_number || '').replace(/\\D/g, '');\nconst syntheticIdentity = 'chatwoot_' + accountId + '_' + inboxId + '_' + externalContactId.replace(/[^a-zA-Z0-9_.:-]/g, '_');\n\nconst userId = syntheticIdentity;\nconst telefone = phone || null;\n\nconst rawCreatedAt = body.created_at ?? body.updated_at;\nconst createdDate = typeof rawCreatedAt === 'number'\n  ? new Date(rawCreatedAt < 1000000000000 ? rawCreatedAt * 1000 : rawCreatedAt)\n  : new Date(rawCreatedAt);\nif (!rawCreatedAt || Number.isNaN(createdDate.getTime())) throw new Error('Evento Chatwoot com data inválida.');\n\nconst conversationMessages = Array.isArray(conversation.messages) ? conversation.messages : [];\nconst matchingMessage = conversationMessages.find((message) => String(message.id) === String(body.id)) || {};\nconst rawStatus = String(body.status || matchingMessage.status || '').trim().toLowerCase();\nconst allowedStatuses = new Set(['sent', 'delivered', 'read', 'failed', 'progress']);\nif (isStatusUpdate && !allowedStatuses.has(rawStatus)) return [];\n\nconst text = typeof body.content === 'string' ? body.content.trim() : '';\nconst attachments = Array.isArray(body.attachments) ? body.attachments : [];\nconst contentType = String(body.content_type || 'text').toLowerCase();\nconst supported = contentType === 'text' && attachments.length === 0 && text.length > 0;\nconst sourceId = String(body.source_id || matchingMessage.source_id || '').trim();\nconst incomingMessageId = sourceId || ('chatwoot_' + accountId + '_' + conversationId + '_' + String(body.id));\n// As mensagens de saída são persistidas com o ID numérico devolvido pela API do Chatwoot.\nconst persistenceId = isStatusUpdate ? String(body.id) : incomingMessageId;\nconst businessNumber = String($env.N8N_WHATSAPP_BUSINESS_PHONE_NUMBER || '').replace(/\\D/g, '');\nconst assignee = conversation.meta?.assignee || conversation.assignee || {};\n\nreturn [{ json: {\n  tipo_evento: isStatusUpdate ? 'status' : (supported ? 'mensagem' : 'nao_suportado'),\n  mensagem_id: persistenceId,\n  mensagem_persistencia_id: persistenceId,\n  chatwoot_mensagem_id: body.id,\n  account_id: accountId,\n  inbox_id: inboxId,\n  conversation_id: conversationId,\n  canal: channel,\n  nome: String(contact.name || 'N/A'),\n  telefone,\n  wa_user_id: userId,\n  numero_empresa: businessNumber || ('chatwoot_inbox_' + inboxId),\n  created_at: createdDate.toISOString(),\n  status: isStatusUpdate ? rawStatus : null,\n  tipo_mensagem: isStatusUpdate ? 'status' : (supported ? 'text' : 'unsupported'),\n  texto: isIncomingMessage ? text : '',\n  media_url: '',\n  anexo_id: '',\n  mime_type: '',\n  origem: 'chatwoot',\n  status_conversa: String(conversation.status || ''),\n  assignee: { id: assignee.id ?? null, name: String(assignee.name || ''), type: String(assignee.type || '') },\n  rejeicao: isIncomingMessage && !supported ? 'A Elo aceita somente mensagens de texto.' : ''\n} }];"
+      },
+      "name": "Normalizar evento Chatwoot",
+      "id": "d86274a3-ff98-44b5-9973-550a7b906e47",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2da9db4e-3a90-41b8-8e8e-4a28ae6bd327",
+              "leftValue": "={{ !$env.N8N_CHATWOOT_AGENT_BOT_ID || String($('Normalizar evento Chatwoot').item.json.assignee.id || '') === String($env.N8N_CHATWOOT_AGENT_BOT_ID) }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        736,
+        -176
+      ],
+      "id": "025fb28a-8e47-4d37-aaa5-5e3086215b94",
+      "name": "If - Bot atribuido?"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        992,
+        -192
+      ],
+      "id": "03fea1d6-969d-4af7-8275-c2f1f083cef5",
+      "name": "Continuar sem status de leitura",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_CHATWOOT_BASE_URL || '').replace(/\\/+$/, '') + '/api/v1/accounts/' + String($('Normalizar evento Chatwoot').first().json.account_id) + '/conversations/' + String($('Normalizar evento Chatwoot').first().json.conversation_id) + '/messages' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $env.N8N_CHATWOOT_API_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"Por enquanto, consigo receber apenas mensagens de texto. Envie sua solicitação por escrito, sem anexos.\",\n  \"message_type\": \"outgoing\",\n  \"private\": false,\n  \"content_type\": \"text\"\n}",
+        "options": {}
+      },
+      "id": "8d56c97a-a2b9-4ab8-a32d-ca11be110001",
+      "name": "Recusar conteúdo não textual",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        -32
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9f55df6c-32d0-458a-b36f-b91fe3a1da23",
+              "leftValue": "={{ $('Normalizar evento Chatwoot').first().json.tipo_evento === 'status' }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -464,
+        -416
+      ],
+      "id": "89d20785-8a31-4f23-aec8-fb8b8c1dc701",
+      "name": "If - Evento de status?"
+    }
+  ],
+  "connections": {
+    "Registrar mensagem recebida": {
+      "main": [
+        [
+          {
+            "node": "Switch - Caminho",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar mensagem de erro no whatsapp10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definir cadastro id": {
+      "main": [
+        [
+          {
+            "node": "Refinar mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refinar mensagem": {
+      "main": [
+        [
+          {
+            "node": "Unificar mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refinar o timestamp para date": {
+      "main": [
+        [
+          {
+            "node": "Registrar mensagem recebida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Status?": {
+      "main": [
+        [
+          {
+            "node": "Call 'Atualizar status mensagem'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If - Bot atribuido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unificar mensagem": {
+      "main": [
+        [
+          {
+            "node": "Refinar o timestamp para date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validar assinatura": {
+      "main": [
+        [
+          {
+            "node": "If - Assinatura Válida?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Assinatura Válida?": {
+      "main": [
+        [
+          {
+            "node": "Assinatura valida",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Assinatura invalida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assinatura valida": {
+      "main": [
+        [
+          {
+            "node": "Normalizar evento Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'pegar ou criar cadastro id'": {
+      "main": [
+        [
+          {
+            "node": "Responder novo cadastro com IA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar mensagem de erro no whatsapp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar dados": {
+      "main": [
+        [
+          {
+            "node": "Criar token de contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token de contexto": {
+      "main": [
+        [
+          {
+            "node": "Identificar número",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identificar número": {
+      "main": [
+        [
+          {
+            "node": "If - Status?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar mensagem de erro no whatsapp10": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - Caminho": {
+      "main": [
+        [
+          {
+            "node": "Call 'pegar ou criar cadastro id'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ajustar parametrização do usuário",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar mensagem de erro no whatsapp": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar mensagem de erro no whatsapp11": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        [
+          {
+            "node": "Registrar mensagem de cadastro bloqueado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar mensagem de erro no whatsapp11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ajustar parametrização do usuário": {
+      "main": [
+        [
+          {
+            "node": "Call 'Conversa com IA'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Mensagem recebida?": {
+      "main": [
+        [
+          {
+            "node": "Formatar dados",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Recusar conteúdo não textual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Bot atribuido?": {
+      "main": [
+        [
+          {
+            "node": "Continuar sem status de leitura",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Normalizar evento Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "If - Evento de status?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Continuar sem status de leitura": {
+      "main": [
+        [
+          {
+            "node": "Definir cadastro id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "validar assinatura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Evento de status?": {
+      "main": [
+        [
+          {
+            "node": "Formatar dados",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If - Mensagem recebida?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Zcv7ypgIKROyiElT"
+  },
+  "versionId": "7825e2b1-54d3-4bcb-a678-98b400fa7137",
+  "meta": {
+    "instanceId": "e25bbeec66c82b0534f57d741f8d06c716df5d0bdb6b2b8e37a3ce75b72e2497"
+  },
+  "nodeGroups": [],
+  "id": "oQLUhZplQq4YBRKx",
+  "tags": [
+    {
+      "updatedAt": "2026-04-22T20:34:26.672Z",
+      "createdAt": "2026-04-22T20:34:26.672Z",
+      "id": "0igcNlFVpE5vLD0t",
+      "name": "REFATORADO COM S2S"
+    },
+    {
+      "updatedAt": "2026-04-20T18:42:55.819Z",
+      "createdAt": "2026-04-20T18:42:55.819Z",
+      "id": "rvY991tpgRZgNqOY",
+      "name": "CHATBOT -KORIS"
+    }
+  ]
+}

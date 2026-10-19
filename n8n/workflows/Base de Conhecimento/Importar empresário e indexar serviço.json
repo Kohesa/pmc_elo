@@ -1,0 +1,399 @@
+{
+  "name": "Importar empresário e indexar serviço",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "payload"
+            }
+          ]
+        }
+      },
+      "id": "c35d40f4-f19e-4bea-a6bb-ad445452af5f",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\nlet payload = input.payload;\nif (typeof payload === 'string') { try { payload = JSON.parse(payload); } catch { throw new Error('payload deve ser um JSON válido.'); } }\nif (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('payload obrigatório.');\nfor (const campo of ['p_nome','p_empresa','p_servico','p_descricao']) {\n  if (!String(payload[campo] || '').trim()) throw new Error('Campo obrigatório ausente: ' + campo);\n}\nif (!String(payload.p_categoria || '').trim()) payload.p_categoria = String(payload.p_servico).trim();\nif (payload.p_autoriza_publicacao !== true) throw new Error('A carga exige autorização de publicação explícita.');\nreturn [{ json: { payload } }];"
+      },
+      "id": "a2f151b7-ee7f-48a4-9299-74b0509728d8",
+      "name": "Validar carga controlada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + '/rest/v1/rpc/rpc_autenticar_s2s' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"processar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "ce111407-8aeb-4d4f-80ca-8fbeec109ea9",
+      "name": "Criar token importar serviço",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + '/rest/v1/rpc/rpc_importar_servico_empresario_s2s' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { ...$('Validar carga controlada').first().json.payload, p_token_s2s: $('Criar token importar serviço').first().json.data } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "e1fc28d4-c5b8-4d82-8c41-fb38f75d0ece",
+      "name": "Importar serviço no Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json?.data ?? $input.first().json;\nlet data = raw;\nif (typeof raw === 'string') { try { data = JSON.parse(raw); } catch { data = []; } }\nconst item = Array.isArray(data) ? data[0] : data;\nif (!item?.servico_id) throw new Error('A importação não retornou o serviço para indexação.');\nconst payload = $('Validar carga controlada').first().json.payload;\nconst schema = {\n  type: 'object', additionalProperties: false,\n  properties: {\n    descricao_busca: { type: 'string' },\n    problemas_atendidos: { type: 'array', items: { type: 'string' }, maxItems: 12 }\n  },\n  required: ['descricao_busca', 'problemas_atendidos']\n};\nconst body = {\n  model: 'google/gemini-2.5-flash', temperature: 0, max_tokens: 900,\n  reasoning: { enabled: false },\n  response_format: { type: 'json_schema', json_schema: { name: 'elo_indice_servico', strict: true, schema } },\n  messages: [\n    { role: 'system', content: [\n      'Prepare um texto curto para pesquisa de uma oferta de serviço da Elo Connect.',\n      'Use exclusivamente os fatos fornecidos. Não invente serviços, especialidades, resultados, localização ou qualificações.',\n      'A descrição deve explicar o serviço e os problemas explicitamente atendidos em linguagem natural.',\n      'Os problemas atendidos devem ser derivações diretas dos dados recebidos, sem ampliar a atuação da empresa.'\n    ].join('\\n') },\n    { role: 'user', content: JSON.stringify({\n      empresa: payload.p_empresa,\n      servico: payload.p_servico,\n      categoria_informada: payload.p_categoria,\n      descricao: payload.p_descricao,\n      problemas_resolvidos: payload.p_problemas_resolvidos || '',\n      especialidades: payload.p_especialidades || []\n    }) }\n  ]\n};\nreturn [{ json: { item, payload, body } }];"
+      },
+      "id": "c2b9c5b0-cae7-412a-a849-4b6037be88fc",
+      "name": "Preparar enriquecimento de busca",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "c89b1dc2-f435-45aa-af67-a44ba7674465",
+      "name": "Enriquecer descrição pesquisável",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        0
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "oKqp4vNNKw0DgTNr",
+          "name": "OpenRouter account"
+        }
+      },
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const preparado = $('Preparar embedding do serviço').first().json;\nconst raw = $input.first().json?.data ?? $input.first().json;\nlet data = raw;\nif (typeof raw === 'string') { try { data = JSON.parse(raw); } catch { data = []; } }\nconst atualizado = Array.isArray(data) ? data[0] : data;\nreturn [{ json: {\n  cadastro_id: preparado.cadastro_id,\n  servico_id: preparado.servico_id,\n  status: atualizado?.status_indexacao || 'indexado',\n  indexed_at: atualizado?.indexed_at || null\n} }];"
+      },
+      "id": "d6a1304b-f86d-4ada-91f6-4ea46e1d68fa",
+      "name": "Retornar carga concluída",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const clean = (value) => String(value || '').trim();\nconst parse = (value) => {\n  if (value && typeof value === 'object') return value;\n  const text = clean(value).replace(/```json|```/g, '').trim();\n  try { return JSON.parse(text); } catch {}\n  const match = text.match(/\\{[\\s\\S]*\\}/);\n  if (match) { try { return JSON.parse(match[0]); } catch {} }\n  return {};\n};\nconst preparado = $('Preparar enriquecimento de busca').first().json;\nconst payload = preparado.payload;\nconst resposta = parse($input.first().json.choices?.[0]?.message?.content);\nconst base = [\n  'Empresa: ' + clean(payload.p_empresa),\n  'Serviço: ' + clean(payload.p_servico),\n  'Categoria informada: ' + clean(payload.p_categoria),\n  'Descrição original: ' + clean(payload.p_descricao),\n  payload.p_problemas_resolvidos ? 'Problemas informados: ' + clean(payload.p_problemas_resolvidos) : '',\n  Array.isArray(payload.p_especialidades) && payload.p_especialidades.length\n    ? 'Especialidades informadas: ' + payload.p_especialidades.map(clean).filter(Boolean).join(', ') : ''\n].filter(Boolean);\nif (clean(resposta.descricao_busca)) base.push('Descrição pesquisável: ' + clean(resposta.descricao_busca));\nif (Array.isArray(resposta.problemas_atendidos) && resposta.problemas_atendidos.length) {\n  base.push('Problemas atendidos: ' + resposta.problemas_atendidos.map(clean).filter(Boolean).join(', '));\n}\nreturn [{ json: {\n  cadastro_id: preparado.item.cadastro_id,\n  servico_id: preparado.item.servico_id,\n  descricao_busca: base.join('\\n')\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        300
+      ],
+      "id": "23b8c85a-b26a-4274-841c-a83e779fe7cc",
+      "name": "Preparar embedding do serviço"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'openai/text-embedding-3-small', dimensions: 384, input: $json.descricao_busca } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1320,
+        300
+      ],
+      "id": "dfa15e4b-1af3-4a66-84fc-5e6fa9a37102",
+      "name": "Gerar embedding do serviço",
+      "credentials": {
+        "openRouterApi": {
+          "id": "oKqp4vNNKw0DgTNr",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + '/rest/v1/rpc/rpc_autenticar_s2s' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"processar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1540,
+        300
+      ],
+      "id": "c6e79452-6415-442d-9b49-4550a6a7b10d",
+      "name": "Criar token atualizar índice",
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + '/rest/v1/rpc/rpc_atualizar_indice_servico_s2s' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { p_token_s2s: $json.data, p_servico_id: $('Preparar embedding do serviço').first().json.servico_id, p_descricao_busca: $('Preparar embedding do serviço').first().json.descricao_busca, p_embedding: $('Gerar embedding do serviço').first().json.data[0].embedding, p_embedding_model: 'openai/text-embedding-3-small' } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1760,
+        300
+      ],
+      "id": "8bf03d92-ca41-425d-974b-0fc8f02861d8",
+      "name": "Atualizar índice do serviço",
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Validar carga controlada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar carga controlada": {
+      "main": [
+        [
+          {
+            "node": "Criar token importar serviço",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token importar serviço": {
+      "main": [
+        [
+          {
+            "node": "Importar serviço no Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Importar serviço no Supabase": {
+      "main": [
+        [
+          {
+            "node": "Preparar enriquecimento de busca",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar enriquecimento de busca": {
+      "main": [
+        [
+          {
+            "node": "Enriquecer descrição pesquisável",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enriquecer descrição pesquisável": {
+      "main": [
+        [
+          {
+            "node": "Preparar embedding do serviço",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar embedding do serviço": {
+      "main": [
+        [
+          {
+            "node": "Gerar embedding do serviço",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar embedding do serviço": {
+      "main": [
+        [
+          {
+            "node": "Criar token atualizar índice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token atualizar índice": {
+      "main": [
+        [
+          {
+            "node": "Atualizar índice do serviço",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar índice do serviço": {
+      "main": [
+        [
+          {
+            "node": "Retornar carga concluída",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ce9a256e-0c67-418d-9b65-ade670d06227",
+  "meta": {
+    "instanceId": "e25bbeec66c82b0534f57d741f8d06c716df5d0bdb6b2b8e37a3ce75b72e2497"
+  },
+  "id": "L8wQ2tKs7Nf4cB6m",
+  "tags": [
+    {
+      "updatedAt": "2026-04-22T20:34:26.672Z",
+      "createdAt": "2026-04-22T20:34:26.672Z",
+      "id": "0igcNlFVpE5vLD0t",
+      "name": "REFATORADO COM S2S"
+    },
+    {
+      "updatedAt": "2026-04-20T18:42:55.819Z",
+      "createdAt": "2026-04-20T18:42:55.819Z",
+      "id": "rvY991tpgRZgNqOY",
+      "name": "CHATBOT -KORIS"
+    }
+  ]
+}

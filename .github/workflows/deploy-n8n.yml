@@ -1,0 +1,54 @@
+name: Deploy n8n workflows
+
+on:
+  push:
+    branches:
+      - homolog
+      - master
+    paths:
+      - "n8n/workflows/**"
+      - "n8n/infraestrutura/**"
+      - ".github/workflows/deploy-n8n.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: n8n-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Publicar workflows do n8n
+    runs-on: ubuntu-latest
+    if: github.ref_name == 'master' || github.ref_name == 'homolog'
+    environment: ${{ github.ref_name == 'master' && 'production' || 'homolog' }}
+    env:
+      N8N_DEPLOYMENT_WEBHOOK_URL: ${{ secrets.N8N_DEPLOYMENT_WEBHOOK_URL }}
+      N8N_DEPLOYMENT_SECRET: ${{ secrets.N8N_DEPLOYMENT_SECRET }}
+      N8N_WORKFLOWS_DIR: n8n/workflows
+      GITHUB_BEFORE_SHA: ${{ github.event.before }}
+      GITHUB_SHA: ${{ github.sha }}
+      GITHUB_REF_NAME: ${{ github.ref_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validar configuracao do ambiente
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$N8N_DEPLOYMENT_WEBHOOK_URL" || { echo "Secret N8N_DEPLOYMENT_WEBHOOK_URL nao configurado."; exit 1; }
+          test -n "$N8N_DEPLOYMENT_SECRET" || { echo "Secret N8N_DEPLOYMENT_SECRET nao configurado."; exit 1; }
+
+      - name: Enviar workflows para o gerenciador
+        run: node n8n/infraestrutura/dispatch-workflow-deployment.mjs

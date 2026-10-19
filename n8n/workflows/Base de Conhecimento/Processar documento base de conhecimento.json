@@ -1,0 +1,1925 @@
+{
+  "name": "Processar documento base de conhecimento",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "processar-documento-base-conhecimento",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3600,
+        656
+      ],
+      "id": "7fc5b7ef-7ffd-44c4-b0f8-57165a2e6032",
+      "name": "Webhook",
+      "webhookId": "f799caf1-7b1a-434b-863c-0905530eef4c",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "4STKNnC5dBvGS8p9",
+          "name": "Processar documento koris"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Webhook').item.json.body.url_documento }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -2816,
+        1232
+      ],
+      "id": "d74207f3-cca4-42c5-b157-1b7f9fcc181a",
+      "name": "Baixar Arquivo",
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -2528,
+        1088
+      ],
+      "id": "a58d6fec-2c5c-45dc-b9ef-52812277ca0e",
+      "name": "Extract from File",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"processar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -2256,
+        1008
+      ],
+      "id": "a94f5409-ddd2-480f-bbc6-d227f37892a7",
+      "name": "Criar token de contexto",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_finalizar_processamento_documento_base_conhecimento\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_id",
+              "value": "={{ $('Webhook').item.json.body.documento_id }}"
+            },
+            {
+              "name": "p_auth_user_id",
+              "value": "={{ $('Webhook').item.json.body.auth_user_id }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            },
+            {
+              "name": "p_status_processamento",
+              "value": "processado"
+            },
+            {
+              "name": "p_documento",
+              "value": "={{ $('Extract from File').item.json.text }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1984,
+        960
+      ],
+      "id": "27afa16d-440c-4a7a-98b5-31c350acbd77",
+      "name": "Finalizar processamento do documento",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"processar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1664,
+        1248
+      ],
+      "id": "bd07cca5-4db8-47fc-9676-0a775c8639ef",
+      "name": "Criar token de contexto1",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_finalizar_processamento_documento_base_conhecimento\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_id",
+              "value": "={{ $('Webhook').item.json.body.documento_id }}"
+            },
+            {
+              "name": "p_auth_user_id",
+              "value": "={{ $('Webhook').item.json.body.auth_user_id }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            },
+            {
+              "name": "p_status_processamento",
+              "value": "erro"
+            },
+            {
+              "name": "p_documento",
+              "value": "="
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1456,
+        1248
+      ],
+      "id": "e9178c06-663d-4f33-8c92-89e33a613669",
+      "name": "Finalizar processamento do documento com erro",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Atualizar o documento no banco de dados",
+        "height": 256,
+        "width": 560,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2320,
+        912
+      ],
+      "typeVersion": 1,
+      "id": "c42b28a8-85e1-4343-b1c4-d3efe8ca6125",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Atualizar o documento no banco de dados",
+        "height": 1728,
+        "width": 7168,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3760,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "8337d7e9-1b25-4a21-891e-c2f6a53a3c02",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Notificar erro na base de conhecimento",
+        "height": 256,
+        "width": 512,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1744,
+        1184
+      ],
+      "typeVersion": 1,
+      "id": "d59c7d10-a529-43ec-a7b0-792570f8b4a3",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1680,
+        640
+      ],
+      "id": "b2aeeffe-2ccb-42f2-b91e-5cd9e7ae941d",
+      "name": "Criar token indexacao",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_iniciar_indexacao_documento_base_conhecimento\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_id",
+              "value": "={{ $('Webhook').item.json.body.documento_id }}"
+            },
+            {
+              "name": "p_auth_user_id",
+              "value": "={{ $('Webhook').item.json.body.auth_user_id }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1472,
+        640
+      ],
+      "id": "33060644-ac8a-48b7-b0ba-a6383892d3f7",
+      "name": "Iniciar indexacao",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\nconst input = $input.first().json;\n\n// Ajuste estes dois caminhos se no seu fluxo os nomes mudarem\nconst documentoId = input.id;\nconst documento = String(input.documento || '').trim();\n\n// Como a RPC de iniciar indexacao nao devolve auth_user_id,\n// pegamos do Webhook original do fluxo.\nconst authUserId =\n  input.auth_user_id ||\n  $('Webhook').first().json.body.auth_user_id;\n\nif (!documentoId) {\n  throw new Error('documento_id ausente para gerar chunks.');\n}\n\nif (!authUserId) {\n  throw new Error('auth_user_id ausente para gerar chunks.');\n}\n\nif (!documento) {\n  throw new Error('documento vazio para gerar chunks.');\n}\n\n// -----------------------------------------------------------------------------\n// PARAMETROS\n// -----------------------------------------------------------------------------\n\nconst TARGET_TOKENS = 400;\nconst MAX_TOKENS = 450;\nconst OVERLAP_TOKENS = 70;\n\n// Aproximacao simples para n8n.\n// Nao e um tokenizer real, mas e suficiente para manter os chunks abaixo do\n// limite pratico que definimos para o text-embedding-3-small.\nfunction estimateTokens(text) {\n  const clean = String(text || '').trim();\n  if (!clean) return 0;\n\n  const words = clean.split(/\\s+/).filter(Boolean).length;\n\n  // Aproximacao conservadora:\n  // em portugues, 1 palavra costuma virar um pouco mais que 1 token.\n  return Math.ceil(words * 1.3);\n}\n\nfunction normalizeText(text) {\n  return String(text || '')\n    .replace(/\\r\\n/g, '\\n')\n    .replace(/[ \\t]+/g, ' ')\n    .replace(/\\n{3,}/g, '\\n\\n')\n    .trim();\n}\n\nfunction sha256(text) {\n  return crypto\n    .createHash('sha256')\n    .update(text, 'utf8')\n    .digest('hex');\n}\n\nfunction splitLongTextByWords(text, maxTokens) {\n  const words = text.split(/\\s+/).filter(Boolean);\n  const parts = [];\n  let current = [];\n\n  for (const word of words) {\n    const candidate = [...current, word].join(' ');\n\n    if (current.length > 0 && estimateTokens(candidate) > maxTokens) {\n      parts.push(current.join(' '));\n      current = [word];\n    } else {\n      current.push(word);\n    }\n  }\n\n  if (current.length > 0) {\n    parts.push(current.join(' '));\n  }\n\n  return parts;\n}\n\nfunction splitLongParagraph(paragraph, maxTokens) {\n  if (estimateTokens(paragraph) <= maxTokens) {\n    return [paragraph];\n  }\n\n  // Primeiro tenta quebrar por frases.\n  const sentences = paragraph\n    .split(/(?<=[.!?])\\s+/)\n    .map(s => s.trim())\n    .filter(Boolean);\n\n  if (sentences.length <= 1) {\n    return splitLongTextByWords(paragraph, maxTokens);\n  }\n\n  const parts = [];\n  let current = '';\n\n  for (const sentence of sentences) {\n    const candidate = current ? `${current} ${sentence}` : sentence;\n\n    if (current && estimateTokens(candidate) > maxTokens) {\n      parts.push(current);\n      current = sentence;\n    } else {\n      current = candidate;\n    }\n  }\n\n  if (current) {\n    parts.push(current);\n  }\n\n  // Se alguma parte ainda ficou grande, quebra por palavras.\n  return parts.flatMap(part =>\n    estimateTokens(part) > maxTokens\n      ? splitLongTextByWords(part, maxTokens)\n      : [part]\n  );\n}\n\nfunction getOverlapText(text, overlapTokens) {\n  const words = text.split(/\\s+/).filter(Boolean);\n\n  if (words.length === 0) {\n    return '';\n  }\n\n  // Estimativa inversa aproximada para converter tokens em quantidade de palavras.\n  const overlapWords = Math.max(1, Math.floor(overlapTokens / 1.3));\n\n  return words.slice(-overlapWords).join(' ');\n}\n\n// -----------------------------------------------------------------------------\n// PREPARAR BLOCOS\n// -----------------------------------------------------------------------------\n\nconst normalized = normalizeText(documento);\n\nconst paragraphs = normalized\n  .split(/\\n{2,}/)\n  .map(p => p.trim())\n  .filter(Boolean)\n  .flatMap(p => splitLongParagraph(p, MAX_TOKENS));\n\n// -----------------------------------------------------------------------------\n// MONTAR CHUNKS\n// -----------------------------------------------------------------------------\n\nconst rawChunks = [];\nlet currentParts = [];\nlet currentText = '';\n\nfor (const paragraph of paragraphs) {\n  const candidate = currentText\n    ? `${currentText}\\n\\n${paragraph}`\n    : paragraph;\n\n  if (currentText && estimateTokens(candidate) > TARGET_TOKENS) {\n    rawChunks.push(currentText);\n\n    const overlap = getOverlapText(currentText, OVERLAP_TOKENS);\n\n    currentParts = overlap ? [overlap, paragraph] : [paragraph];\n    currentText = currentParts.join('\\n\\n');\n\n    // Caso overlap + novo paragrafo ainda exceda o teto, salva o overlap como apoio\n    // apenas se couber; senao segue so com o novo paragrafo.\n    if (estimateTokens(currentText) > MAX_TOKENS) {\n      currentParts = [paragraph];\n      currentText = paragraph;\n    }\n  } else {\n    currentParts.push(paragraph);\n    currentText = candidate;\n  }\n}\n\nif (currentText) {\n  rawChunks.push(currentText);\n}\n\n// Remove chunks vazios e qualquer chunk que, por seguranca, ainda tenha ficado grande.\nconst chunks = rawChunks\n  .map(chunk => chunk.trim())\n  .filter(Boolean)\n  .flatMap(chunk =>\n    estimateTokens(chunk) > MAX_TOKENS\n      ? splitLongTextByWords(chunk, MAX_TOKENS)\n      : [chunk]\n  );\n\n// -----------------------------------------------------------------------------\n// RETORNO: 1 ITEM COM TODOS OS CHUNKS\n// -----------------------------------------------------------------------------\n\nconst chunksNormalizados = chunks.map((conteudo, index) => ({\n  chunk_index: index,\n  conteudo,\n  conteudo_hash: sha256(conteudo),\n  token_count: estimateTokens(conteudo)\n}));\n\nreturn [\n  {\n    json: {\n      documento_id: documentoId,\n      auth_user_id: authUserId,\n      qtd_chunks: chunksNormalizados.length,\n      rota_indexacao: chunksNormalizados.length > 80 ? 'fila_pendentes' : 'direta',\n      chunks: chunksNormalizados\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1248,
+        640
+      ],
+      "id": "8b8a0cfa-895d-4062-8fdb-4e8fdea8086a",
+      "name": "Gerar chunks"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// ALTERACAO OPENAI EMBEDDINGS\n// A Edge Function gerar-embedding foi removida. Este node agora le o retorno direto da OpenAI.\n\nconst chunk = $('Loop Over Items - chunks pequenos').item.json;\nconst embeddingResponse = $json;\nconst embedding = embeddingResponse?.data?.[0]?.embedding;\n\nif (!chunk) {\n  throw new Error('Chunk original nao encontrado.');\n}\n\nif (!Array.isArray(embedding)) {\n  throw new Error(`Embedding ausente no chunk_index ${chunk.chunk_index}.`);\n}\n\nif (embedding.length !== 384) {\n  throw new Error(\n    `Embedding com dimensao invalida no chunk_index ${chunk.chunk_index}: esperado 384, recebido ${embedding.length}.`\n  );\n}\n\nreturn {\n  json: {\n    documento_id: chunk.documento_id,\n    auth_user_id: chunk.auth_user_id,\n    chunk_index: chunk.chunk_index,\n    conteudo: chunk.conteudo,\n    conteudo_hash: chunk.conteudo_hash,\n    embedding,\n    embedding_model: 'text-embedding-3-small',\n    token_count: chunk.token_count,\n    usage_embedding: embeddingResponse?.usage || null\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        848
+      ],
+      "id": "3bee5211-26be-4634-a8b1-3d21295fcfde",
+      "name": "Anexar embedding ao chunk"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nif (items.length === 0) {\n  throw new Error('Nenhum chunk indexado recebido para agrupar.');\n}\n\nconst primeiroChunk = items[0].json;\nconst documentoId = primeiroChunk.documento_id;\nconst authUserId = primeiroChunk.auth_user_id;\n\nconst chunks = items.map(({ json }) => {\n  if (json.documento_id !== documentoId) {\n    throw new Error('Foram recebidos chunks de documentos diferentes no mesmo agrupamento.');\n  }\n\n  if (json.auth_user_id !== authUserId) {\n    throw new Error('Foram recebidos chunks de usuarios diferentes no mesmo agrupamento.');\n  }\n\n  if (!Array.isArray(json.embedding)) {\n    throw new Error(`Chunk ${json.chunk_index} chegou sem embedding valido.`);\n  }\n\n  return {\n    chunk_index: json.chunk_index,\n    conteudo: json.conteudo,\n    conteudo_hash: json.conteudo_hash,\n    embedding: json.embedding,\n    embedding_model: json.embedding_model,\n    token_count: json.token_count,\n  };\n});\n\nchunks.sort((a, b) => a.chunk_index - b.chunk_index);\n\nreturn [\n  {\n    json: {\n      documento_id: documentoId,\n      auth_user_id: authUserId,\n      chunks,\n      qtd_chunks: chunks.length,\n      embedding_model: chunks[0]?.embedding_model ?? null,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        640
+      ],
+      "id": "9adcff33-588d-4355-99c1-5aecd62b527f",
+      "name": "Agrupar chunks indexados"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -80,
+        640
+      ],
+      "id": "2bc7fd05-9d98-4ac8-b162-f5661ec2f63a",
+      "name": "Criar token salvar chunks",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_salvar_chunks_base_conhecimento_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_documento_id",
+              "value": "={{ $('Agrupar chunks indexados').item.json.documento_id }}"
+            },
+            {
+              "name": "p_auth_user_id",
+              "value": "={{ $('Agrupar chunks indexados').item.json.auth_user_id }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            },
+            {
+              "name": "p_chunks",
+              "value": "={{ $('Agrupar chunks indexados').item.json.chunks }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        176,
+        640
+      ],
+      "id": "2bcd331f-5b79-43d0-adae-9e438c1cd488",
+      "name": "Salvar chunks",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        320
+      ],
+      "id": "d32d9b9f-e988-46c9-beb5-fdf8f583e3bf",
+      "name": "Criar token finalizar indexacao",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_finalizar_indexacao_documento_base_conhecimento\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_id",
+              "value": "={{ $('Preparar finalizacao indexacao').item.json.documento_id }}"
+            },
+            {
+              "name": "p_auth_user_id",
+              "value": "={{ $('Preparar finalizacao indexacao').item.json.auth_user_id }}"
+            },
+            {
+              "name": "p_status_indexacao",
+              "value": "=indexado"
+            },
+            {
+              "name": "p_qtd_chunks",
+              "value": "={{ $('Preparar finalizacao indexacao').item.json.qtd_chunks }}"
+            },
+            {
+              "name": "p_embedding_model",
+              "value": "={{ $('Preparar finalizacao indexacao').item.json.embedding_model }}"
+            },
+            {
+              "name": "p_erro_indexacao",
+              "value": "={{ null }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        320
+      ],
+      "id": "1bcdfa43-ca9a-4ea2-9f6c-0eb554cb3f37",
+      "name": "Finalizar indexacao",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Gerar os chunks para consulta da IA",
+        "height": 1328,
+        "width": 5072,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1744,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "840a30bb-d42b-48ee-b116-bef598416481",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e2a7b581-75b9-4ce4-9d59-d4f03cafb03f",
+              "leftValue": "={{ $json.body.origem }}",
+              "rightValue": "reindexacao_manual",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -3376,
+        656
+      ],
+      "id": "a28f6e4b-0499-4d97-99fe-51cb49713498",
+      "name": "If - reindexacao manual?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0f1c08f9-f41e-4adc-8b45-178a59cdbeb8",
+              "leftValue": "={{ $json.rota_indexacao }}",
+              "rightValue": "fila_pendentes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1056,
+        640
+      ],
+      "id": "ccc4afa5-d581-44fe-b415-668c98564cb2",
+      "name": "If - documento grande?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nif (!Array.isArray(input.chunks) || input.chunks.length === 0) {\n  throw new Error('Nenhum chunk pequeno recebido para expandir.');\n}\n\nreturn input.chunks.map((chunk) => ({\n  json: {\n    documento_id: input.documento_id,\n    auth_user_id: input.auth_user_id,\n    chunk_index: chunk.chunk_index,\n    conteudo: chunk.conteudo,\n    conteudo_hash: chunk.conteudo_hash,\n    token_count: chunk.token_count\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        656
+      ],
+      "id": "92af88d5-2377-462d-8bdd-47808ed8c5b0",
+      "name": "Expandir chunks pequenos"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -592,
+        656
+      ],
+      "id": "d30d65af-fedd-4ffc-86c3-43d475b76c16",
+      "name": "Loop Over Items - chunks pequenos"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -592,
+        -32
+      ],
+      "id": "c4a0ec24-7848-4d24-aa7d-2de5b0101449",
+      "name": "Criar token enfileirar chunks pendentes",
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_enfileirar_chunks_pendentes_base_conhecimento_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_documento_id",
+              "value": "={{ $('Gerar chunks').item.json.documento_id }}"
+            },
+            {
+              "name": "p_auth_user_id",
+              "value": "={{ $('Gerar chunks').item.json.auth_user_id }}"
+            },
+            {
+              "name": "p_chunks",
+              "value": "={{ $('Gerar chunks').item.json.chunks }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -368,
+        -32
+      ],
+      "id": "dd303243-037a-4ab4-b503-8baf760415f1",
+      "name": "Enfileirar chunks pendentes",
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "8EaY0GH1wjxQUGM4",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/8EaY0GH1wjxQUGM4",
+          "cachedResultName": "Indexar chunks pendentes documento grande"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "documento_id": "={{ $('Gerar chunks').item.json.documento_id }}",
+            "auth_user_id": "={{ $('Gerar chunks').item.json.auth_user_id }}",
+            "qtd_chunks": "={{ String($('Gerar chunks').item.json.qtd_chunks) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "documento_id",
+              "displayName": "documento_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "auth_user_id",
+              "displayName": "auth_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "qtd_chunks",
+              "displayName": "qtd_chunks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        304
+      ],
+      "id": "4b35022b-ab68-4468-8450-a6c153e204ac",
+      "name": "Indexar chunks pendentes documento grande",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ALTERACAO INDICE CONTEXTUAL\n// Centraliza os dados de finalizacao para documento pequeno e grande.\n// O node tambem informa que, apos finalizar status_indexacao=indexado,\n// o fluxo deve gerar o indice contextual do documento.\n\nfunction getJsonFromNode(name) {\n  try {\n    return $(name).first().json || {};\n  } catch {\n    return {};\n  }\n}\n\nconst input = $input.first().json || {};\nconst webhook = getJsonFromNode('Webhook').body || {};\nconst gerarChunks = getJsonFromNode('Gerar chunks');\nconst agruparChunks = getJsonFromNode('Agrupar chunks indexados');\nconst retornoIndexacaoLenta = getJsonFromNode('Indexar chunks pendentes documento grande');\n\nconst documentoId =\n  input.documento_id ||\n  retornoIndexacaoLenta.documento_id ||\n  agruparChunks.documento_id ||\n  gerarChunks.documento_id ||\n  webhook.documento_id;\n\nconst authUserId =\n  input.auth_user_id ||\n  retornoIndexacaoLenta.auth_user_id ||\n  agruparChunks.auth_user_id ||\n  gerarChunks.auth_user_id ||\n  webhook.auth_user_id;\n\nconst qtdChunks = Number(\n  input.qtd_chunks ||\n  retornoIndexacaoLenta.qtd_chunks ||\n  agruparChunks.qtd_chunks ||\n  gerarChunks.qtd_chunks ||\n  0\n);\n\nconst embeddingModel =\n  input.embedding_model ||\n  retornoIndexacaoLenta.embedding_model ||\n  agruparChunks.embedding_model ||\n  'text-embedding-3-small';\n\nif (!documentoId) {\n  throw new Error('documento_id ausente para finalizar indexacao.');\n}\n\nif (!authUserId) {\n  throw new Error('auth_user_id ausente para finalizar indexacao.');\n}\n\nif (!qtdChunks || qtdChunks <= 0) {\n  throw new Error('qtd_chunks invalido para finalizar indexacao.');\n}\n\nreturn [{\n  json: {\n    documento_id: documentoId,\n    auth_user_id: authUserId,\n    qtd_chunks: qtdChunks,\n    embedding_model: embeddingModel,\n    gerar_indice_contextual: true,\n    limite_amostra_indice_contextual: Number(input.limite_amostra_indice_contextual || retornoIndexacaoLenta.limite_amostra_indice_contextual || 15)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        320
+      ],
+      "id": "c37dd7f4-45ed-4d27-a94b-f7f8a4a9f9a6",
+      "name": "Preparar finalizacao indexacao",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "content": "## Indexar documento com menos de 80 chunks",
+        "height": 496,
+        "width": 1232,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        592
+      ],
+      "typeVersion": 1,
+      "id": "a8f63a24-abdc-4280-9a1e-ae4a274559c7",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Indexar documento com mais de 500 chunks",
+        "height": 672,
+        "width": 1232,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "1d0c8196-d9b3-4e02-be4c-62554ebe9aea",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Finalizar indexação",
+        "height": 352,
+        "width": 624,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        416,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "3289a600-95d0-49a1-8744-a3b73ff9290b",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7a96af32-b8f7-4813-8c83-c9e373649027",
+              "leftValue": "={{ $json.body.url_documento }}",
+              "rightValue": "={{ ($env.N8N_SUPABASE_URL || '').replace(/^https?:\\/\\//, '').split('/')[0] }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -3056,
+        1248
+      ],
+      "id": "c2ec8fbc-633c-4667-a731-8e4f5e1be4e3",
+      "name": "If - Validar se o documento está na url valida"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1136,
+        320
+      ],
+      "id": "4b593dd5-29e5-4721-b977-d5b538e4aebb",
+      "name": "Criar token obter amostra indice",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_obter_amostra_documento_base_conhecimento_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_documento_id",
+              "value": "={{ $('Preparar finalizacao indexacao').item.json.documento_id }}"
+            },
+            {
+              "name": "p_auth_user_id",
+              "value": "={{ $('Preparar finalizacao indexacao').item.json.auth_user_id }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            },
+            {
+              "name": "p_limite_total",
+              "value": "={{ $('Preparar finalizacao indexacao').item.json.limite_amostra_indice_contextual || 15 }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1360,
+        320
+      ],
+      "id": "56e7035f-542e-4ae5-a8ff-e68be138e14f",
+      "name": "Obter amostra para indice contextual",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ALTERACAO INDICE CONTEXTUAL\n// Monta o payload para gerar o resumo semantico do documento a partir da amostra.\n\nconst amostra = $json;\nconst chunks = Array.isArray(amostra.chunks_amostra) ? amostra.chunks_amostra : [];\n\nif (!amostra.documento_id || !Array.isArray(chunks) || chunks.length === 0) {\n  throw new Error('Amostra do documento ausente ou vazia para gerar indice contextual.');\n}\n\nconst textoAmostra = chunks\n  .map(chunk => '# Chunk ' + chunk.chunk_index + '\\n' + String(chunk.conteudo || '').trim())\n  .filter(Boolean)\n  .join('\\n\\n---\\n\\n');\n\nconst body = {\n  model: 'openai/gpt-4.1-mini',\n  temperature: 0.1,\n  response_format: { type: 'json_object' },\n  messages: [\n    {\n      role: 'system',\n      content: `You generate semantic document indexes for a corporate RAG system.\n\nYou will receive a sample from the beginning, middle, and end of a document already split into chunks.\nYour task is to create a search summary that helps retrieve this document from natural user questions.\n\nReturn only valid JSON in this format:\n{\n  \"titulo_detectado\": \"short string or null\",\n  \"tipo_documento\": \"politica|contrato|manual|processo|faq|pitch|treinamento|outro\",\n  \"resumo_busca\": \"objective text with 800 to 1600 characters, including important terms from the document\",\n  \"assuntos\": [\"topic 1\", \"topic 2\"],\n  \"entidades\": {\n    \"pessoas\": [],\n    \"empresas\": [],\n    \"produtos\": [],\n    \"areas\": [],\n    \"datas\": [],\n    \"valores\": []\n  }\n}\n\nRules:\n- Do not invent information that is not present in the sample.\n- If the sample is inconclusive, say that in resumo_busca.\n- The summary is for semantic search, not for final user presentation.\n- Include natural synonyms only when clearly derived from the content.`.trim()\n    },\n    {\n      role: 'user',\n      content: `Document: ${amostra.documento_id}\nCategory: ${amostra.categoria_nome || amostra.categoria_id || 'no category'}\nTotal chunks: ${amostra.qtd_chunks || 0}\n\nChunk sample:\n\n${textoAmostra}`.trim()\n    }\n  ]\n};\n\nreturn [{\n  json: {\n    documento_id: amostra.documento_id,\n    cadastro_id: amostra.cadastro_id,\n    categoria_id: amostra.categoria_id,\n    categoria_nome: amostra.categoria_nome,\n    qtd_chunks: amostra.qtd_chunks,\n    embedding_model_documento: amostra.embedding_model,\n    body_resumo: body\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        320
+      ],
+      "id": "eaaad42d-e89b-4aa9-b1da-b41f0bea0048",
+      "name": "Montar payload resumo indice",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body_resumo }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1808,
+        320
+      ],
+      "id": "7a631e87-afcd-49d9-836b-2478900cce00",
+      "name": "Gerar resumo semantico indice",
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "credentials": {
+        "openRouterApi": {
+          "id": "oKqp4vNNKw0DgTNr",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ALTERACAO INDICE CONTEXTUAL\n// Normaliza o JSON retornado pela IA e monta o texto que sera embedado.\n\nconst content = $json.choices?.[0]?.message?.content || '{}';\n\nlet parsed;\ntry {\n  parsed = JSON.parse(String(content).replace(/```json/g, '').replace(/```/g, '').trim());\n} catch (error) {\n  throw new Error('Nao foi possivel interpretar o resumo semantico retornado pela IA: ' + error.message);\n}\n\nconst documento = $('Montar payload resumo indice').item.json;\nconst finalizacao = $('Preparar finalizacao indexacao').item.json;\n\nconst tituloDetectado = parsed.titulo_detectado ? String(parsed.titulo_detectado).trim() : null;\nconst tipoDocumento = parsed.tipo_documento ? String(parsed.tipo_documento).trim().toLowerCase() : 'outro';\nconst resumoBusca = String(parsed.resumo_busca || '').trim();\nconst assuntos = Array.isArray(parsed.assuntos) ? parsed.assuntos.map(String).filter(Boolean) : [];\nconst entidades = parsed.entidades && typeof parsed.entidades === 'object' ? parsed.entidades : {};\n\nif (!resumoBusca) {\n  throw new Error('Resumo de busca vazio para indice contextual.');\n}\n\nconst textoEmbedding = [\n  tituloDetectado ? 'Titulo: ' + tituloDetectado : '',\n  'Tipo: ' + tipoDocumento,\n  assuntos.length ? 'Assuntos: ' + assuntos.join(', ') : '',\n  'Resumo: ' + resumoBusca\n].filter(Boolean).join('\\n');\n\nconst tokenCount = Math.max(1, Math.ceil(textoEmbedding.length / 4));\n\nreturn [{\n  json: {\n    documento_id: documento.documento_id,\n    auth_user_id: finalizacao.auth_user_id,\n    titulo_detectado: tituloDetectado,\n    tipo_documento: tipoDocumento,\n    resumo_busca: resumoBusca,\n    assuntos_json: assuntos,\n    entidades_json: entidades,\n    texto_embedding: textoEmbedding,\n    token_count: tokenCount,\n    usage_resumo: $json.usage || null\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2032,
+        320
+      ],
+      "id": "1e32ab5a-88fc-46db-8d83-da9244d4c36c",
+      "name": "Normalizar resumo indice",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// ALTERACAO OPENAI EMBEDDINGS\n// A Edge Function gerar-embedding foi removida. Este node agora le o retorno direto da OpenAI.\n\nconst resumo = $('Normalizar resumo indice').item.json;\nconst embeddingResponse = $json;\nconst embedding = embeddingResponse?.data?.[0]?.embedding;\n\nif (!Array.isArray(embedding)) {\n  throw new Error('Embedding do resumo ausente.');\n}\n\nif (embedding.length !== 384) {\n  throw new Error('Embedding do resumo com dimensao invalida: esperado 384, recebido ' + embedding.length + '.');\n}\n\nreturn {\n  json: {\n    documento_id: resumo.documento_id,\n    auth_user_id: resumo.auth_user_id,\n    titulo_detectado: resumo.titulo_detectado,\n    tipo_documento: resumo.tipo_documento,\n    resumo_busca: resumo.resumo_busca,\n    assuntos_json: resumo.assuntos_json,\n    entidades_json: resumo.entidades_json,\n    embedding_resumo: embedding,\n    embedding_model: 'text-embedding-3-small',\n    token_count: resumo.token_count,\n    usage_resumo: resumo.usage_resumo,\n    usage_embedding: embeddingResponse?.usage || null\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        320
+      ],
+      "id": "f4e19658-d9a4-4660-9066-ff7f1847f758",
+      "name": "Anexar embedding ao indice contextual",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2688,
+        320
+      ],
+      "id": "84c7fa72-8be1-4989-be34-b39d5884eb1f",
+      "name": "Criar token salvar indice contextual",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_salvar_indice_documento_base_conhecimento_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_documento_id",
+              "value": "={{ $('Anexar embedding ao indice contextual').item.json.documento_id }}"
+            },
+            {
+              "name": "p_auth_user_id",
+              "value": "={{ $('Anexar embedding ao indice contextual').item.json.auth_user_id }}"
+            },
+            {
+              "name": "p_titulo_detectado",
+              "value": "={{ $('Anexar embedding ao indice contextual').item.json.titulo_detectado }}"
+            },
+            {
+              "name": "p_tipo_documento",
+              "value": "={{ $('Anexar embedding ao indice contextual').item.json.tipo_documento }}"
+            },
+            {
+              "name": "p_resumo_busca",
+              "value": "={{ $('Anexar embedding ao indice contextual').item.json.resumo_busca }}"
+            },
+            {
+              "name": "p_assuntos_json",
+              "value": "={{ $('Anexar embedding ao indice contextual').item.json.assuntos_json }}"
+            },
+            {
+              "name": "p_entidades_json",
+              "value": "={{ $('Anexar embedding ao indice contextual').item.json.entidades_json }}"
+            },
+            {
+              "name": "p_embedding_resumo",
+              "value": "={{ $('Anexar embedding ao indice contextual').item.json.embedding_resumo }}"
+            },
+            {
+              "name": "p_embedding_model",
+              "value": "={{ $('Anexar embedding ao indice contextual').item.json.embedding_model }}"
+            },
+            {
+              "name": "p_token_count",
+              "value": "={{ $('Anexar embedding ao indice contextual').item.json.token_count }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2912,
+        320
+      ],
+      "id": "962f54c9-90c4-4736-98c8-799b6ca2d519",
+      "name": "Salvar indice contextual do documento",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Gerar indice contextual do documento\n\nDepois de status_indexacao=indexado, o fluxo obtem amostra dos chunks, gera resumo semantico, gera embedding do resumo e salva o indice via RPC.",
+        "height": 360,
+        "width": 2048,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1072,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "fd2c435c-4e06-424b-976e-e52dd0e88c68",
+      "name": "Sticky Note - indice contextual documento"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "596c5861-e2ed-4ce1-b638-e4a82a759b5c",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        144,
+        304
+      ],
+      "id": "1029e479-0a0f-4708-a027-f235b36f1e96",
+      "name": "If - Erro?"
+    },
+    {
+      "parameters": {
+        "content": "## Notificar erro na base de conhecimento - Indexação",
+        "height": 256,
+        "width": 656,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        416,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "3280f447-2fc2-4bd7-9ec1-3a33d0245e84",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_finalizar_indexacao_documento_base_conhecimento\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_id",
+              "value": "={{ $('Gerar chunks').item.json.documento_id }}"
+            },
+            {
+              "name": "p_auth_user_id",
+              "value": "={{ $('Gerar chunks').item.json.auth_user_id }}"
+            },
+            {
+              "name": "p_status_indexacao",
+              "value": "=erro"
+            },
+            {
+              "name": "p_qtd_chunks",
+              "value": "={{ $('Gerar chunks').item.json.qtd_chunks }}"
+            },
+            {
+              "name": "p_embedding_model",
+              "value": "={{ null }}"
+            },
+            {
+              "name": "p_erro_indexacao",
+              "value": "={{ $('Caputurar erro').item.json.error }}"
+            },
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        880,
+        -16
+      ],
+      "id": "2dcea9a0-88b5-4618-8771-aa75e2d3ef1e",
+      "name": "Finalizar indexação com erro",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"indexar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        -16
+      ],
+      "id": "fca7884b-90b6-4d3b-8e3d-e2944b43ed9a",
+      "name": "Criar token finalizar indexação com erro",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase Koris Chatbot - API Service Role"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    model: 'openai/text-embedding-3-small',\n    dimensions: 384,\n    input: $('Loop Over Items - chunks pequenos').item.json.conteudo\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -80,
+        848
+      ],
+      "id": "c99f2af6-679f-4384-811c-4e24ac53cef3",
+      "name": "Gerar embedding OpenRouter do chunk",
+      "credentials": {
+        "openRouterApi": {
+          "id": "oKqp4vNNKw0DgTNr",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    model: 'openai/text-embedding-3-small',\n    dimensions: 384,\n    input: $('Normalizar resumo indice').item.json.texto_embedding\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2256,
+        320
+      ],
+      "id": "ca80011d-8188-4a53-8ec5-922da8d5623d",
+      "name": "Gerar embedding OpenRouter resumo indice",
+      "credentials": {
+        "openRouterApi": {
+          "id": "oKqp4vNNKw0DgTNr",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let error = $input.first().json?.error\n\nreturn {\n  error\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        -16
+      ],
+      "id": "7becb007-3e54-430d-ab6d-6e124ee26063",
+      "name": "Caputurar erro"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If - reindexacao manual?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixar Arquivo": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar token de contexto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Criar token de contexto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar token de contexto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token de contexto": {
+      "main": [
+        [
+          {
+            "node": "Finalizar processamento do documento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar token de contexto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalizar processamento do documento": {
+      "main": [
+        [
+          {
+            "node": "Criar token indexacao",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar token de contexto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token de contexto1": {
+      "main": [
+        [
+          {
+            "node": "Finalizar processamento do documento com erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token indexacao": {
+      "main": [
+        [
+          {
+            "node": "Iniciar indexacao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iniciar indexacao": {
+      "main": [
+        [
+          {
+            "node": "Gerar chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar chunks": {
+      "main": [
+        [
+          {
+            "node": "If - documento grande?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anexar embedding ao chunk": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items - chunks pequenos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrupar chunks indexados": {
+      "main": [
+        [
+          {
+            "node": "Criar token salvar chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token salvar chunks": {
+      "main": [
+        [
+          {
+            "node": "Salvar chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar chunks": {
+      "main": [
+        [
+          {
+            "node": "Preparar finalizacao indexacao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token finalizar indexacao": {
+      "main": [
+        [
+          {
+            "node": "Finalizar indexacao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalizar indexacao": {
+      "main": [
+        [
+          {
+            "node": "Criar token obter amostra indice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - reindexacao manual?": {
+      "main": [
+        [
+          {
+            "node": "Criar token indexacao",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If - Validar se o documento está na url valida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - documento grande?": {
+      "main": [
+        [
+          {
+            "node": "Criar token enfileirar chunks pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Expandir chunks pequenos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expandir chunks pequenos": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items - chunks pequenos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items - chunks pequenos": {
+      "main": [
+        [
+          {
+            "node": "Agrupar chunks indexados",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gerar embedding OpenRouter do chunk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token enfileirar chunks pendentes": {
+      "main": [
+        [
+          {
+            "node": "Enfileirar chunks pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enfileirar chunks pendentes": {
+      "main": [
+        [
+          {
+            "node": "Indexar chunks pendentes documento grande",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Caputurar erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Indexar chunks pendentes documento grande": {
+      "main": [
+        [
+          {
+            "node": "If - Erro?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar finalizacao indexacao": {
+      "main": [
+        [
+          {
+            "node": "Criar token finalizar indexacao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Validar se o documento está na url valida": {
+      "main": [
+        [
+          {
+            "node": "Baixar Arquivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token obter amostra indice": {
+      "main": [
+        [
+          {
+            "node": "Obter amostra para indice contextual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obter amostra para indice contextual": {
+      "main": [
+        [
+          {
+            "node": "Montar payload resumo indice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar payload resumo indice": {
+      "main": [
+        [
+          {
+            "node": "Gerar resumo semantico indice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar resumo semantico indice": {
+      "main": [
+        [
+          {
+            "node": "Normalizar resumo indice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar resumo indice": {
+      "main": [
+        [
+          {
+            "node": "Gerar embedding OpenRouter resumo indice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anexar embedding ao indice contextual": {
+      "main": [
+        [
+          {
+            "node": "Criar token salvar indice contextual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token salvar indice contextual": {
+      "main": [
+        [
+          {
+            "node": "Salvar indice contextual do documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Erro?": {
+      "main": [
+        [
+          {
+            "node": "Caputurar erro",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar finalizacao indexacao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token finalizar indexação com erro": {
+      "main": [
+        [
+          {
+            "node": "Finalizar indexação com erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar embedding OpenRouter do chunk": {
+      "main": [
+        [
+          {
+            "node": "Anexar embedding ao chunk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar embedding OpenRouter resumo indice": {
+      "main": [
+        [
+          {
+            "node": "Anexar embedding ao indice contextual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Caputurar erro": {
+      "main": [
+        [
+          {
+            "node": "Criar token finalizar indexação com erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "4oaJ9mkeAdzB42LY",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "72e7717e-6c89-4206-aa3c-495f1a80d496",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e25bbeec66c82b0534f57d741f8d06c716df5d0bdb6b2b8e37a3ce75b72e2497"
+  },
+  "id": "4oaJ9mkeAdzB42LY",
+  "tags": [
+    {
+      "updatedAt": "2026-04-22T20:34:26.672Z",
+      "createdAt": "2026-04-22T20:34:26.672Z",
+      "id": "0igcNlFVpE5vLD0t",
+      "name": "REFATORADO COM S2S"
+    },
+    {
+      "updatedAt": "2026-07-29T20:59:20.528Z",
+      "createdAt": "2026-07-29T20:59:20.528Z",
+      "id": "lIpiXBYCYxsgiwbO",
+      "name": "Homolog"
+    }
+  ]
+}

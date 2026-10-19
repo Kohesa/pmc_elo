@@ -1,0 +1,56 @@
+name: Validate deploy sources
+
+on:
+  pull_request:
+    branches:
+      - homolog
+      - master
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/functions/**"
+      - "supabase/config.toml"
+      - "n8n/workflows/**"
+      - "n8n/infraestrutura/**"
+      - ".github/workflows/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-n8n:
+    name: Validar JSONs do n8n
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validar workflows
+        env:
+          N8N_DEPLOYMENT_DRY_RUN: "true"
+          N8N_WORKFLOWS_DIR: n8n/workflows
+        run: node n8n/infraestrutura/dispatch-workflow-deployment.mjs
+
+  validate-migrations:
+    name: Validar nomes das migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verificar timestamps duplicados
+        shell: bash
+        run: |
+          set -euo pipefail
+          duplicates="$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | cut -d_ -f1 | sort | uniq -d)"
+          if [ -n "$duplicates" ]; then
+            echo "Existem migrations com timestamp duplicado:"
+            echo "$duplicates"
+            exit 1
+          fi

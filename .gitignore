@@ -1,0 +1,28 @@
+# Supabase
+.branches
+.temp
+.tmp_*
+.Plano-de-Desenvolvimento
+
+# dotenvx
+.env.keys
+.env.local
+.env.*.local
+.env
+supabase/.env.functions
+supabase/functions/.env
+supabase/seed.sql
+.claude
+CLAUDE.md
+planodesenvolvimento.md
+
+Frontend/node_modules/
+Frontend/build/
+Frontend/dist/
+Frontend/coverage/
+Frontend/.DS_Store
+Frontend/*.log
+Frontend/.env*
+
+# Base de referencia da arquitetura Koris (somente local)
+Chatbot Koris/

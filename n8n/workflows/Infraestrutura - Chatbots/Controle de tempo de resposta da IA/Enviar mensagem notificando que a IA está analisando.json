@@ -1,0 +1,251 @@
+{
+  "name": "Enviar mensagem notificando que a IA está analisando",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "id_mensagem"
+            },
+            {
+              "name": "numero"
+            },
+            {
+              "name": "account_id",
+              "type": "number"
+            },
+            {
+              "name": "inbox_id",
+              "type": "number"
+            },
+            {
+              "name": "conversation_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2cd3c35d-e0ea-4e8e-ae7b-cc58f2b0a070",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "REmXwk0LIwSfPoHu",
+          "mode": "list",
+          "cachedResultName": "Control de tempo de respostas da IA",
+          "cachedResultUrl": "/projects/kFjpV2rMdVif9iQ9/datatables/REmXwk0LIwSfPoHu"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id_mensagem_recebida",
+              "keyValue": "={{ $json.id_mensagem }}"
+            }
+          ]
+        },
+        "limit": 1,
+        "orderBy": true,
+        "orderByColumn": "updatedAt"
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "f1c7e689-10b6-48d0-b5f2-09f20668d34f",
+      "name": "Pegar status da mensagem"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bbf06e00-0fba-497f-b002-08cc1ea6a0da",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "em análise",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        432,
+        0
+      ],
+      "id": "cb1ae882-d3f5-4afd-9de2-1e68efde111e",
+      "name": "If - Ainda pendente de resposta?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_CHATWOOT_BASE_URL || '').replace(/\\/+$/, '') + '/api/v1/accounts/' + String($('When Executed by Another Workflow').first().json.account_id) + '/conversations/' + String($('When Executed by Another Workflow').first().json.conversation_id) + '/messages' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $env.N8N_CHATWOOT_API_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": {{ JSON.stringify($json.resposta_espera) }},\n  \"message_type\": \"outgoing\",\n  \"private\": false,\n  \"content_type\": \"text\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        704,
+        -112
+      ],
+      "id": "76313e90-d77b-45a4-925f-dc3661acf1c5",
+      "name": "Send message"
+    },
+    {
+      "parameters": {
+        "content": "## Acompanhamento de demora na resposta da IA",
+        "height": 384,
+        "width": 1376
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "694012f7-a7c9-40e9-bfba-1388ad6876ae",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "REmXwk0LIwSfPoHu",
+          "mode": "list",
+          "cachedResultName": "Control de tempo de respostas da IA",
+          "cachedResultUrl": "/projects/kFjpV2rMdVif9iQ9/datatables/REmXwk0LIwSfPoHu"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $('Pegar status da mensagem').item.json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        16
+      ],
+      "id": "d4f6a198-ac96-4986-b268-b46b694f1459",
+      "name": "Deletar mensagem que já foi acompanhada"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Pegar status da mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pegar status da mensagem": {
+      "main": [
+        [
+          {
+            "node": "If - Ainda pendente de resposta?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Ainda pendente de resposta?": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Deletar mensagem que já foi acompanhada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        [
+          {
+            "node": "Deletar mensagem que já foi acompanhada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "26dcd9e8-0259-406c-894c-cf163d6e61cf",
+  "meta": {
+    "instanceId": "e25bbeec66c82b0534f57d741f8d06c716df5d0bdb6b2b8e37a3ce75b72e2497"
+  },
+  "id": "77XkagBDNFwaG0EQ",
+  "tags": [
+    {
+      "updatedAt": "2026-04-20T18:42:55.819Z",
+      "createdAt": "2026-04-20T18:42:55.819Z",
+      "id": "rvY991tpgRZgNqOY",
+      "name": "CHATBOT -KORIS"
+    }
+  ]
+}

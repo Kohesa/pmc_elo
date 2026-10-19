@@ -1,0 +1,359 @@
+{
+  "name": "Cadastrar mensagem",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_inserir_conversa\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}\n",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "id"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1632,
+        352
+      ],
+      "id": "7abdf262-b4ea-45ca-bbcf-c0c9376d38b9",
+      "name": "Registrar mensagem",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "payload"
+            },
+            {
+              "name": "endpoint"
+            },
+            {
+              "name": "apikey"
+            },
+            {
+              "name": "Authorization"
+            },
+            {
+              "name": "acao_realizada"
+            },
+            {
+              "name": "telefone_session"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        480
+      ],
+      "id": "2080e7b1-6b63-425d-8f91-26da62bc6641",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ab398e39-4719-41d5-9fd8-3aeb45b1d72a",
+              "name": "payload",
+              "value": "={{ JSON.parse(JSON.stringify($json.payload).replace(/\\\\x/g, '\\\\u00')) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        480
+      ],
+      "id": "8630aae8-9587-4989-8885-9dfc8309b0b9",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "## Fluxo principal",
+        "height": 624,
+        "width": 1636,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        224,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "b94c05c1-9ba3-486b-9490-7bbff558c90f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "468b201e-9e80-467a-a299-2f7017b3cf02",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1184,
+        480
+      ],
+      "id": "705872b4-b1f4-4e59-8322-bc610a43fdb1",
+      "name": "If - Retornou o token?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_autenticar_s2s\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE }}\",\n  \"p_scope\": \"set_contexto\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        768,
+        480
+      ],
+      "id": "b3063c09-93ec-4d77-bf9c-a7e4af54298a",
+      "name": "Criar token de contexto",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL || '').replace(/\\/+$/, '') + \"/rest/v1/rpc/rpc_set_contexto_sessao\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "p_token_s2s",
+              "value": "={{ $json.data }}"
+            },
+            {
+              "name": "p_id_usuario_wa",
+              "value": "={{ $('When Executed by Another Workflow').item.json.telefone_session }}"
+            },
+            {
+              "name": "p_sessao_token"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        976,
+        480
+      ],
+      "id": "41ad566b-ceca-49af-85fa-da6a3f732020",
+      "name": "Iniciar sessão",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "errorMessage": "Erro ao criar a sessao"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        560
+      ],
+      "id": "0da8efa2-297d-4cd4-8395-f7abf414de87",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawPayload = $('Edit Fields').first().json.payload;\nconst obj = typeof rawPayload === 'string' ? JSON.parse(rawPayload) : { ...rawPayload };\n\nlet token = $('Iniciar sessão').first().json.data;\ntoken = String(token ?? '').trim();\n\n// Se vier com aspas extras, remove\ntoken = token.replace(/^\"|\"$/g, '');\n\n// Se vier duplamente escapado no início (\\\\x...), normaliza para \\x...\ntoken = token.replace(/^\\\\\\\\x/, '\\\\x');\n\nobj.p_sessao_token = token;\n\nreturn [{ payload: obj }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        352
+      ],
+      "id": "5533d83c-0ab9-47dd-9798-9678c869205b",
+      "name": "Adicionar sessão"
+    }
+  ],
+  "connections": {
+    "Registrar mensagem": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Criar token de contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token de contexto": {
+      "main": [
+        [
+          {
+            "node": "Iniciar sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iniciar sessão": {
+      "main": [
+        [
+          {
+            "node": "If - Retornou o token?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Retornou o token?": {
+      "main": [
+        [
+          {
+            "node": "Adicionar sessão",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adicionar sessão": {
+      "main": [
+        [
+          {
+            "node": "Registrar mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "99b69a07-f8c7-47f4-ae11-93bad020a40b",
+  "meta": {
+    "instanceId": "e25bbeec66c82b0534f57d741f8d06c716df5d0bdb6b2b8e37a3ce75b72e2497"
+  },
+  "id": "yGZGdruhvwp3n8EP",
+  "tags": [
+    {
+      "updatedAt": "2026-04-22T20:34:26.672Z",
+      "createdAt": "2026-04-22T20:34:26.672Z",
+      "id": "0igcNlFVpE5vLD0t",
+      "name": "REFATORADO COM S2S"
+    },
+    {
+      "updatedAt": "2026-04-20T18:42:55.819Z",
+      "createdAt": "2026-04-20T18:42:55.819Z",
+      "id": "rvY991tpgRZgNqOY",
+      "name": "CHATBOT -KORIS"
+    }
+  ]
+}
