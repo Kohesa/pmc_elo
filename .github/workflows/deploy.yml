@@ -47,13 +47,13 @@ jobs:
       - name: Instalar Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.72.7
 
       - name: Vincular projeto Supabase
         run: supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD"
 
       - name: Aplicar migrations
-        run: supabase db push --remote --password "$SUPABASE_DB_PASSWORD"
+        run: supabase db push --remote --yes --password "$SUPABASE_DB_PASSWORD"
 
       - name: Verificar alteracoes em Edge Functions
         id: functions
