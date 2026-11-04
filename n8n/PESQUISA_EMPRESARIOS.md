@@ -1,6 +1,6 @@
 # Pesquisa de empresários — primeira entrega
 
-Esta entrega implementa somente a pesquisa. O cadastro conversacional e a manutenção pelo próprio empresário permanecem para a etapa seguinte.
+Esta entrega implementa somente a pesquisa. Cadastro e manutenção pelo próprio empresário acontecem exclusivamente no frontend autenticado; o chatbot apenas envia os links correspondentes.
 
 ## Arquitetura aplicada
 

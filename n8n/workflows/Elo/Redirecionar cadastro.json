@@ -1,0 +1,60 @@
+{
+  "active": false,
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [[{"node":"Identificar intenção e redirecionar","type":"main","index":0}]]
+    }
+  },
+  "createdAt": "2026-10-31T12:00:00.000Z",
+  "id": "EloCadastroChat01",
+  "meta": null,
+  "name": "Redirecionar cadastro",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {"name":"id_usuario_canal"},
+            {"name":"cadastro_id"},
+            {"name":"account_id","type":"number"},
+            {"name":"inbox_id","type":"number"},
+            {"name":"conversation_id","type":"number"},
+            {"name":"chatwoot_message_id","type":"number"},
+            {"name":"mensagem"}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [0,0],
+      "id": "cadastro-trigger-elo-01",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const entrada = $input.first().json || {};\nconst normalizado = String(entrada.mensagem || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').trim().toLowerCase();\nconst edicao = /(?:editar|alterar|atualizar|corrigir|mudar).*(?:cadastro|empresa|negocio|servico|dados)|(?:meu cadastro|meus dados)/.test(normalizado);\nconst cadastro = /(?:me cadastrar|fazer (?:um )?cadastro|criar (?:um )?cadastro|participar da elo|entrar (?:na|para a) elo)|(?:quero|gostaria|preciso|desejo|como|onde|posso).*cadastr/.test(normalizado);\nif (!edicao && !cadastro) return [{ json: { handled: false, cliente_id: entrada.cadastro_id || null } }];\n\nconst appBase = String($env.N8N_ELO_FRONTEND_URL || 'http://127.0.0.1:5173').replace(/\\/+$/, '');\nconst baseChatwoot = String($env.N8N_CHATWOOT_BASE_URL_Elo || '').replace(/\\/+$/, '');\nconst chatwootToken = String($env.N8N_CHATWOOT_API_TOKEN_Elo || '');\nif (!baseChatwoot || !chatwootToken) throw new Error('Variáveis do Chatwoot da Elo não configuradas no n8n.');\n\nconst resposta = edicao\n  ? `Para editar seu cadastro com segurança, acesse a área do participante: ${appBase}/entrar`\n  : `Para criar seu cadastro na Elo, preencha o formulário seguro: ${appBase}/cadastro`;\n\nawait this.helpers.httpRequest({\n  method: 'POST',\n  url: `${baseChatwoot}/api/v1/accounts/${entrada.account_id}/conversations/${entrada.conversation_id}/messages`,\n  headers: { api_access_token: chatwootToken, 'Content-Type': 'application/json' },\n  json: true,\n  body: { content: resposta, message_type: 'outgoing', private: false, content_type: 'text' },\n});\n\nreturn [{ json: { handled: true, cadastro_id: entrada.cadastro_id || null, acao: edicao ? 'redirecionar_edicao' : 'redirecionar_cadastro' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260,0],
+      "id": "cadastro-redirecionar-01",
+      "name": "Identificar intenção e redirecionar"
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "executionOrder":"v1",
+    "callerPolicy":"workflowsFromSameOwner",
+    "saveDataErrorExecution":"none",
+    "saveDataSuccessExecution":"none",
+    "saveExecutionProgress":false,
+    "saveManualExecutions":false,
+    "availableInMCP":false
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-10-31T17:30:00.000Z",
+  "versionId": "f06af98e-8b15-4cf5-b82d-1c4dca70d682"
+}

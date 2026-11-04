@@ -1,5 +1,5 @@
 -- Registra os aceites legais vinculados ao cadastro da Elo.
--- Os campos ficam disponíveis para o fluxo de cadastro conversacional.
+-- Os campos ficam disponíveis para o fluxo de cadastro web autenticado.
 
 GRANT CREATE ON SCHEMA private TO private_rpc_executor;
 GRANT CREATE ON SCHEMA public  TO private_rpc_executor;

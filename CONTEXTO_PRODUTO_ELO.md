@@ -119,18 +119,12 @@ A triagem não deve responder ao usuário. Ela apenas entrega a intenção e os 
 
 ### 8.2 Dados previstos
 
-O cadastro deve comportar, conforme o escopo fornecido:
+Os dados são separados em duas entidades. O cadastro privado da pessoa deve comportar:
 
 - nome completo;
 - nome preferido;
 - telefone;
 - e-mail;
-- nome da empresa ou negócio;
-- descrição do negócio;
-- problemas que resolve;
-- serviços oferecidos;
-- site e redes sociais;
-- setor: Comércio, Indústria, Serviços, Tecnologia ou Saúde;
 - cargo ou função;
 - tempo de atuação;
 - interesse em participar do ministério;
@@ -147,6 +141,17 @@ O cadastro deve comportar, conforme o escopo fornecido:
 - aceite dos termos;
 - autorização para publicação do perfil.
 
+A ficha pública da empresa deve comportar:
+
+- nome da empresa ou negócio;
+- descrição do negócio;
+- problemas que resolve e serviços oferecidos;
+- telefone e e-mail exclusivamente quando autorizados para publicação;
+- links públicos tipados, incluindo site e redes sociais;
+- setor e indicadores de publicação/indexação.
+
+Serviços pertencem à empresa, não ao cadastro pessoal. A IA não recebe o cadastro privado e usa somente a ficha pública autorizada da empresa e o serviço correspondente.
+
 ### 8.3 Estados do cadastro
 
 | Estado | Significado |
@@ -160,15 +165,13 @@ Somente a operação interna pode mudar um cadastro aprovado para inativo ou blo
 
 ### 8.4 Regra de publicação
 
-Um perfil só pode aparecer na busca quando todas as condições forem verdadeiras:
+Uma empresa só pode aparecer na busca quando todas as condições forem verdadeiras:
 
-- cadastro concluído;
-- status `aprovado`;
-- cadastro ativo;
-- consentimento de publicação concedido;
+- empresa ativa e publicada;
+- consentimento de publicação da ficha comercial registrado;
 - serviço ou especialidade disponível para busca.
 
-Revogar o consentimento deve retirar o perfil das novas buscas sem apagar o cadastro.
+Revogar o consentimento deve retirar a empresa das novas buscas sem apagar o cadastro privado da pessoa.
 
 ## 9. Busca de profissionais e serviços
 
@@ -273,6 +276,11 @@ A Elo não deve:
 ## 14. Privacidade e propriedade dos dados
 
 - Cada contato acessa somente o próprio cadastro e histórico.
+- A propriedade do cadastro é definida pelo usuário autenticado por e-mail e senha no Supabase Auth, e não pelo WhatsApp, telefone, inbox, conversa ou navegador usados no momento.
+- O chatbot não coleta nem altera dados cadastrais; ele encaminha o usuário ao formulário ou à área autenticada.
+- No MVP, o cadastro cria o login diretamente por e-mail e senha, sem validação do e-mail por código.
+- Códigos de confirmação não são enviados à IA nem persistidos no histórico conversacional.
+- O telefone é contato privado opcional por padrão e só vira contato público mediante consentimento específico.
 - Dados sensíveis são protegidos no backend.
 - A busca usa somente uma projeção publicável dos perfis.
 - Consentimentos devem guardar data, origem e versão dos termos.
@@ -304,12 +312,14 @@ Ao final do MVP, um usuário deve conseguir:
 2. Enviar uma mensagem textual.
 3. Receber uma resposta adequada à intenção identificada.
 4. Conhecer a Elo.
-5. Iniciar, interromper e concluir o cadastro.
-6. Ter o cadastro aprovado automaticamente ao concluir.
-7. Autorizar ou não a publicação do perfil.
+5. Receber o link correto ao pedir para criar ou editar um cadastro.
+6. Criar o cadastro pelo formulário web e ter aprovação automática ao concluir.
+7. Autorizar ou não a publicação do perfil no formulário.
 8. Pesquisar um profissional ou serviço em linguagem natural.
 9. Receber apenas indicações existentes e publicáveis.
 10. Solicitar atendimento humano.
+11. Criar o cadastro pela web e, na etapa final, definir o e-mail e a senha de acesso.
+12. Acessar e editar o próprio cadastro na área autenticada por e-mail.
 
 A operação interna deve conseguir gerenciar os documentos padrão usados pela IA e visualizar todos os cadastros pelo painel administrativo existente.
 

@@ -17,6 +17,7 @@ CLAUDE.md
 planodesenvolvimento.md
 
 Frontend/node_modules/
+node_modules/
 Frontend/build/
 Frontend/dist/
 Frontend/coverage/

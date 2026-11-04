@@ -1,11 +1,15 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import AdminLayout from "./components/AdminLayout";
+import EloChatLauncher from "./components/EloChatLauncher";
 import AdminCadastros from "./pages/AdminCadastros";
 import AdminKnowledgeBase from "./pages/AdminKnowledgeBase";
 import Landing from "./pages/Landing";
 import LegalPage from "./pages/LegalPage";
 import Login from "./pages/Login";
+import ParticipantLogin from "./pages/ParticipantLogin";
+import ParticipantProfile from "./pages/ParticipantProfile";
+import ParticipantRegister from "./pages/ParticipantRegister";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 
 function ProtectedAdmin({ children }: { children: ReactNode }) {
@@ -47,6 +51,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/entrar" element={<ParticipantLogin />} />
+        <Route path="/cadastro" element={<ParticipantRegister />} />
+        <Route path="/meu-cadastro" element={<ParticipantProfile />} />
         <Route path="/terms" element={<LegalPage kind="terms" />} />
         <Route path="/privacy" element={<LegalPage kind="privacy" />} />
         <Route element={<ProtectedAdmin><AdminShell /></ProtectedAdmin>}>
@@ -55,6 +62,7 @@ export default function App() {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <EloChatLauncher />
     </BrowserRouter>
   );
 }

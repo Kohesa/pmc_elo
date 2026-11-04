@@ -1,0 +1,476 @@
+{
+  "name": "Indexar serviços pendentes",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "148c6ee3-aad4-45d2-a900-a470ab585101",
+      "name": "Todos os dias às 09h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -840,
+        120
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "2be9b536-a8ce-49a1-84dc-2d4961a5978a",
+      "name": "Executar manualmente",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -840,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + '/rest/v1/rpc/rpc_autenticar_s2s' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE_Elo }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE_Elo }}\",\n  \"p_scope\": \"processar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "05aa27e0-230c-45d2-b488-2a4d7e5ac90d",
+      "name": "Criar token reservar lote",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -580,
+        220
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + '/rest/v1/rpc/rpc_reservar_servicos_indexacao_pendentes_s2s' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { p_token_s2s: $json.data, p_limite: 25 } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "3a37b719-30ec-46cf-be27-59814d7aec31",
+      "name": "Reservar serviços pendentes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -340,
+        220
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const entrada = $input.first()?.json ?? {};\nlet dados = entrada.data ?? entrada;\n\nif (typeof dados === 'string') {\n  const texto = dados.trim();\n  dados = texto ? JSON.parse(texto) : [];\n}\n\nconst servicos = (Array.isArray(dados) ? dados : (dados?.servico_id ? [dados] : []))\n  .map(item => ({\n    servico_id: String(item.servico_id || '').trim(),\n    descricao_busca: String(item.descricao_busca || '').trim(),\n    tentativa: Number(item.tentativa || 0)\n  }))\n  .filter(item => item.servico_id && item.descricao_busca);\n\nif (servicos.length === 0) {\n  return [{ json: { sem_pendentes: true, quantidade_reservada: 0, servicos: [], inputs: [] } }];\n}\n\nreturn [{\n  json: {\n    sem_pendentes: false,\n    quantidade_reservada: servicos.length,\n    servicos,\n    inputs: servicos.map(item => item.descricao_busca)\n  }\n}];"
+      },
+      "id": "eaf5ca34-31d3-4fbb-adc5-7f3f98b86f75",
+      "name": "Preparar lote reservado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -100,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "13c0e485-5976-4170-a628-4e09f3fa9d54",
+              "leftValue": "={{ $json.sem_pendentes }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e20e26f1-763c-4ea6-b790-7a20169f413a",
+      "name": "If - fila esgotada?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        140,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'openai/text-embedding-3-small', dimensions: 384, input: $json.inputs } }}",
+        "options": {}
+      },
+      "id": "437db643-aa1d-47a3-9853-c41646a9b64e",
+      "name": "Gerar embeddings do lote",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        620,
+        440
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "openRouterApi": {
+          "id": "oKqp4vNNKw0DgTNr",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const lote = $('Preparar lote reservado').item.json;\nconst resposta = $json || {};\nconst embeddings = Array.isArray(resposta.data) ? resposta.data : [];\n\nif (!Array.isArray(lote.servicos) || lote.servicos.length === 0) {\n  throw new Error('Lote de serviços ausente.');\n}\nif (embeddings.length !== lote.servicos.length) {\n  throw new Error(`OpenRouter retornou ${embeddings.length} embeddings para ${lote.servicos.length} serviços.`);\n}\n\nconst porIndice = new Map(embeddings.map(item => [Number(item.index), item.embedding]));\nconst itens = lote.servicos.map((servico, index) => {\n  const embedding = porIndice.get(index);\n  if (!Array.isArray(embedding) || embedding.length !== 384) {\n    throw new Error(`Embedding inválido para o serviço ${servico.servico_id}.`);\n  }\n  return {\n    servico_id: servico.servico_id,\n    descricao_busca: servico.descricao_busca,\n    embedding\n  };\n});\n\nreturn { json: { itens, quantidade: itens.length } };"
+      },
+      "id": "546a809d-5900-40d9-91ad-e5f15a64d24a",
+      "name": "Anexar embeddings ao lote",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        860,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + '/rest/v1/rpc/rpc_autenticar_s2s' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_client_id\": \"{{ $env.N8N_CLIENT_ID_SUPABASE_Elo }}\",\n  \"p_client_secret\": \"{{ $env.N8N_CLIENT_SECRET_SUPABASE_Elo }}\",\n  \"p_scope\": \"processar_base_conhecimento\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "dbff78e5-8f07-4d28-a858-dcd95b27a6dd",
+      "name": "Criar token salvar lote",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1100,
+        440
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.N8N_SUPABASE_URL_Elo || '').replace(/\\/+$/, '') + '/rest/v1/rpc/rpc_salvar_indices_servicos_lote_s2s' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { p_token_s2s: $json.data, p_itens: $('Anexar embeddings ao lote').item.json.itens, p_embedding_model: 'openai/text-embedding-3-small' } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "bb23488e-5a2b-4ceb-837f-164b973cd983",
+      "name": "Salvar lote indexado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1340,
+        440
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "supabaseApi": {
+          "id": "wgdTATUiaucUGp5O",
+          "name": "Supabase local - Elo Connect"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "id": "8f8564d6-2563-4ebc-8abd-e09c8bd1025e",
+      "name": "Wait - respiro entre lotes",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1580,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { concluido: true, mensagem: 'Fila de serviços pendentes esgotada.' } }];"
+      },
+      "id": "7efcba55-9de1-47e5-b39b-644722de5744",
+      "name": "Retornar fila esgotada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        380,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Indexação automática dos serviços da Elo\n\nExecuta imediatamente após um cadastro web publicado, diariamente às **09h** no fuso `America/Sao_Paulo` e também pode ser iniciado manualmente.\n\n1. Reserva atomicamente até 25 serviços publicados.\n2. Envia ao OpenRouter somente `descricao_busca`.\n3. Salva os 25 embeddings em lote via RPC S2S.\n4. Volta diretamente para uma nova reserva, sem `Loop Over Items`.\n5. Repete até esgotar a fila.\n\nItens interrompidos em `indexando` voltam à fila após 30 minutos; a rotina automática limita cada serviço a cinco tentativas.",
+        "height": 440,
+        "width": 640,
+        "color": 4
+      },
+      "id": "5a3aaefc-8055-4aa4-a65b-a72cb184a815",
+      "name": "Como funciona",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "indexar-servicos-pendentes",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -840,
+        480
+      ],
+      "id": "825eaa7b-4bb6-4ce2-a9ab-409e93a7d8c5",
+      "name": "Webhook - cadastro publicado",
+      "webhookId": "ad57dc7c-c0df-4a77-8c5a-f1053df3546e",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "4STKNnC5dBvGS8p9",
+          "name": "Processar documento koris"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Todos os dias às 09h": {
+      "main": [
+        [
+          {
+            "node": "Criar token reservar lote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Executar manualmente": {
+      "main": [
+        [
+          {
+            "node": "Criar token reservar lote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token reservar lote": {
+      "main": [
+        [
+          {
+            "node": "Reservar serviços pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reservar serviços pendentes": {
+      "main": [
+        [
+          {
+            "node": "Preparar lote reservado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar lote reservado": {
+      "main": [
+        [
+          {
+            "node": "If - fila esgotada?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - fila esgotada?": {
+      "main": [
+        [
+          {
+            "node": "Retornar fila esgotada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gerar embeddings do lote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar embeddings do lote": {
+      "main": [
+        [
+          {
+            "node": "Anexar embeddings ao lote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anexar embeddings ao lote": {
+      "main": [
+        [
+          {
+            "node": "Criar token salvar lote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar token salvar lote": {
+      "main": [
+        [
+          {
+            "node": "Salvar lote indexado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar lote indexado": {
+      "main": [
+        [
+          {
+            "node": "Wait - respiro entre lotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - respiro entre lotes": {
+      "main": [
+        [
+          {
+            "node": "Criar token reservar lote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - cadastro publicado": {
+      "main": [
+        [
+          {
+            "node": "Criar token reservar lote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo"
+  },
+  "versionId": "7a1475ef-4769-42ad-b395-b97b3968b5cc",
+  "meta": {
+    "instanceId": "e25bbeec66c82b0534f57d741f8d06c716df5d0bdb6b2b8e37a3ce75b72e2497"
+  },
+  "id": "H8jV4mQ2cL9sR6pT",
+  "tags": []
+}

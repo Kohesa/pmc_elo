@@ -26,15 +26,19 @@ Use `chatwoot.env.example` como referência:
 | --- | --- |
 | `NODE_FUNCTION_ALLOW_BUILTIN` | Deve ser `crypto` para permitir a validação HMAC no Code node |
 | `N8N_BLOCK_ENV_ACCESS_IN_NODE` | Deve ser `false` para os Code nodes lerem as configurações da integração |
-| `N8N_SUPABASE_URL` | API local, a partir do contêiner n8n: `http://host.docker.internal:54321` |
+| `N8N_SUPABASE_URL_Elo` | API local, a partir do contêiner n8n: `http://host.docker.internal:54321` |
+| `N8N_SUPABASE_ANON_KEY_Elo` | Chave publicável usada somente nos endpoints do Supabase Auth para enviar/verificar OTP |
+| `N8N_CLIENT_ID_SUPABASE_Elo` | Identificador S2S exclusivo da Elo |
+| `N8N_CLIENT_SECRET_SUPABASE_Elo` | Segredo S2S exclusivo da Elo |
 | `N8N_CLIENT_ID_SUPABASE` | Identificador cadastrado em `private.credenciais_s2s` |
 | `N8N_CLIENT_SECRET_SUPABASE` | Segredo correspondente ao hash armazenado na credencial S2S |
-| `N8N_CHATWOOT_BASE_URL` | URL do Chatwoot, atualmente `https://chatbot.kohesa.com.br` |
-| `N8N_CHATWOOT_API_TOKEN` | Token usado para criar mensagens na conversa |
-| `N8N_CHATWOOT_WEBHOOK_SECRET` | Segredo usado para verificar o webhook |
-| `N8N_CHATWOOT_ACCOUNT_ID` | Conta autorizada |
-| `N8N_CHATWOOT_INBOX_IDS` | Lista de inboxes autorizadas, separada por vírgulas |
-| `N8N_CHATWOOT_AGENT_BOT_ID` | Filtro opcional de AgentBot atribuído |
+| `N8N_CHATWOOT_BASE_URL_Elo` | URL do Chatwoot, atualmente `https://chatbot.kohesa.com.br` |
+| `N8N_ELO_FRONTEND_URL` | URL pública do frontend usada nos links de cadastro e edição enviados pelo chatbot |
+| `N8N_CHATWOOT_API_TOKEN_Elo` | Token usado para criar e remover mensagens na conversa |
+| `N8N_CHATWOOT_WEBHOOK_SECRET_Elo` | Segredo usado para verificar o webhook |
+| `N8N_CHATWOOT_ACCOUNT_ID_Elo` | Conta autorizada |
+| `N8N_CHATWOOT_INBOX_IDS_Elo` | Lista de inboxes autorizadas, separada por vírgulas |
+| `N8N_CHATWOOT_AGENT_BOT_ID_Elo` | Filtro opcional de AgentBot atribuído |
 | `N8N_WHATSAPP_BUSINESS_PHONE_NUMBER` | Número empresarial quando o WhatsApp for habilitado |
 
 As respostas usam `POST /api/v1/accounts/{account_id}/conversations/{conversation_id}/messages`, com `message_type: outgoing`, `private: false` e `content_type: text`. Os valores `account_id`, `inbox_id` e `conversation_id` atravessam o fluxo principal e os subworkflows.
@@ -73,7 +77,18 @@ select vault.create_secret(
   '<segredo-header-auth-local>',
   'n8n_base_conhecimento_auth'
 );
+
+select vault.create_secret(
+  'http://host.docker.internal:5678/webhook/indexar-servicos-pendentes',
+  'n8n_indexacao_servicos_webhook_url'
+);
 ```
+
+O webhook `indexar-servicos-pendentes` usa a mesma credencial **Header Auth**
+interna do processamento da base de conhecimento. O Supabase envia somente o
+UUID do serviço; telefone, e-mail e os demais dados privados não atravessam o
+webhook. Em nuvem, substitua a URL local por
+`https://n8n.kohesa.com.br/webhook/indexar-servicos-pendentes`.
 
 ## Widget
 
