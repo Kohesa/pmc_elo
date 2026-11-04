@@ -53,7 +53,7 @@ jobs:
         run: supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD"
 
       - name: Aplicar migrations
-        run: supabase db push --remote --yes --password "$SUPABASE_DB_PASSWORD"
+        run: supabase db push --linked --yes --password "$SUPABASE_DB_PASSWORD"
 
       - name: Verificar alteracoes em Edge Functions
         id: functions
