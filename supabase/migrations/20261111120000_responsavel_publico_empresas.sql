@@ -16,6 +16,10 @@ COMMENT ON COLUMN private.empresas.responsavel_publico IS
 COMMENT ON COLUMN private.empresas.publicar_responsavel IS
   'Consentimento específico para publicar responsavel_publico nas pesquisas da Elo.';
 
+-- O PostgreSQL exige que a nova role proprietária tenha CREATE no schema
+-- durante o ALTER FUNCTION ... OWNER TO. A permissão é revogada ao final.
+GRANT CREATE ON SCHEMA public TO private_rpc_executor;
+
 CREATE OR REPLACE FUNCTION public.rpc_cadastro_web_salvar(p_dados jsonb)
 RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER
