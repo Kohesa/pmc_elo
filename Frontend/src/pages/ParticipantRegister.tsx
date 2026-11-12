@@ -10,10 +10,10 @@ type Step = "form" | "account";
 const PASSWORD_MIN_LENGTH = 10;
 
 const emptyForm = {
-  nome: "", nome_preferido: "", empresa_nome: "", empresa_descricao: "", setor: "",
+  nome: "", nome_preferido: "", empresa_nome: "", empresa_responsavel: "", empresa_descricao: "", setor: "",
   site: "", instagram: "", linkedin: "", servico_nome: "", servico_descricao: "",
   telefone: "", empresa_telefone: "", empresa_email: "",
-  autoriza_publicacao: true, publicar_telefone: false, publicar_email: false, aceita_termos: false,
+  autoriza_publicacao: true, publicar_responsavel: false, publicar_telefone: false, publicar_email: false, aceita_termos: false,
 };
 
 export default function ParticipantRegister() {
@@ -33,7 +33,7 @@ export default function ParticipantRegister() {
       setAuthenticated(true);
       setEmail(data.session.user.email || "");
       const { data: current } = await supabase.rpc("rpc_meu_cadastro");
-      const profile = current as { cadastrado?: boolean; cadastro?: { nome?: string; nome_preferido?: string; telefone?: string }; empresa?: { nome?: string; descricao_negocio?: string; setor?: string; links_publicos?: Array<{ tipo?: string; url?: string }>; publicado?: boolean; telefone_contato?: string | null; email_contato?: string | null; telefone_publico?: string | null; email_publico?: string | null }; servicos?: Array<{ nome?: string; descricao?: string }> } | null;
+      const profile = current as { cadastrado?: boolean; cadastro?: { nome?: string; nome_preferido?: string; telefone?: string }; empresa?: { nome?: string; responsavel_contato?: string | null; responsavel_publico?: string | null; publicar_responsavel?: boolean; descricao_negocio?: string; setor?: string; links_publicos?: Array<{ tipo?: string; url?: string }>; publicado?: boolean; telefone_contato?: string | null; email_contato?: string | null; telefone_publico?: string | null; email_publico?: string | null }; servicos?: Array<{ nome?: string; descricao?: string }> } | null;
       if (profile?.cadastrado) {
         const links = profile.empresa?.links_publicos || [];
         const link = (type: string) => links.find((item) => item.tipo === type)?.url || "";
@@ -43,6 +43,7 @@ export default function ParticipantRegister() {
           nome: profile.cadastro?.nome || "",
           nome_preferido: profile.cadastro?.nome_preferido || "",
           empresa_nome: profile.empresa?.nome || "",
+          empresa_responsavel: profile.empresa?.responsavel_contato || profile.empresa?.responsavel_publico || "",
           empresa_descricao: profile.empresa?.descricao_negocio || "",
           setor: profile.empresa?.setor || "",
           site: link("site"), instagram: link("instagram"), linkedin: link("linkedin"),
@@ -51,6 +52,7 @@ export default function ParticipantRegister() {
           empresa_telefone: profile.empresa?.telefone_contato || profile.empresa?.telefone_publico || "",
           empresa_email: profile.empresa?.email_contato || profile.empresa?.email_publico || "",
           autoriza_publicacao: profile.empresa?.publicado ?? false,
+          publicar_responsavel: profile.empresa?.publicar_responsavel ?? Boolean(profile.empresa?.responsavel_publico),
           publicar_telefone: Boolean(profile.empresa?.telefone_publico),
           publicar_email: Boolean(profile.empresa?.email_publico),
           aceita_termos: true,
@@ -109,10 +111,10 @@ export default function ParticipantRegister() {
       </form>}
       {step === "form" && <form onSubmit={continueFromForm} className="space-y-6">
         <Group title="Você"><Text label="Nome completo" value={form.nome} setValue={(value) => setForm({ ...form, nome: value })} /><Text label="Como prefere ser chamado(a)" required={false} value={form.nome_preferido} setValue={(value) => setForm({ ...form, nome_preferido: value })} /><Text label="Telefone privado com DDD (opcional)" required={false} value={form.telefone} setValue={(value) => setForm({ ...form, telefone: value })} inputMode="tel" help="Este telefone fica privado e, depois de cadastrado, não pode ser substituído." /></Group>
-        <Group title="Empresa"><Text label="Nome da empresa" value={form.empresa_nome} setValue={(value) => setForm({ ...form, empresa_nome: value })} /><Area label="O que a empresa faz e quais problemas resolve" value={form.empresa_descricao} setValue={(value) => setForm({ ...form, empresa_descricao: value })} /><Text label="Setor ou categoria" value={form.setor} setValue={(value) => setForm({ ...form, setor: value })} /></Group>
+        <Group title="Empresa"><Text label="Nome da empresa" value={form.empresa_nome} setValue={(value) => setForm({ ...form, empresa_nome: value })} /><Text label="Nome do responsável público (opcional)" required={false} value={form.empresa_responsavel} setValue={(value) => setForm({ ...form, empresa_responsavel: value })} help="Informe somente se quiser associar publicamente uma pessoa à empresa. A publicação será autorizada separadamente abaixo." /><Area label="O que a empresa faz e quais problemas resolve" value={form.empresa_descricao} setValue={(value) => setForm({ ...form, empresa_descricao: value })} /><Text label="Setor ou categoria" value={form.setor} setValue={(value) => setForm({ ...form, setor: value })} /></Group>
         <Group title="Contatos da empresa"><Text label="Telefone comercial com DDD" required={false} value={form.empresa_telefone} setValue={(value) => setForm({ ...form, empresa_telefone: value })} inputMode="tel" autoComplete="tel" /><Text label="E-mail comercial" required={false} type="email" value={form.empresa_email} setValue={(value) => setForm({ ...form, empresa_email: value })} autoComplete="email" /><Text label="Site" required={false} value={form.site} setValue={(value) => setForm({ ...form, site: value })} /><Text label="Instagram" required={false} value={form.instagram} setValue={(value) => setForm({ ...form, instagram: value })} /><Text label="LinkedIn" required={false} value={form.linkedin} setValue={(value) => setForm({ ...form, linkedin: value })} /></Group>
         <Group title="Serviço principal"><Text label="Nome do serviço" value={form.servico_nome} setValue={(value) => setForm({ ...form, servico_nome: value })} /><Area label="Descrição e problemas que resolve" value={form.servico_descricao} setValue={(value) => setForm({ ...form, servico_descricao: value })} /></Group>
-        <Group title="Publicação"><Check checked={form.autoriza_publicacao} setChecked={(value) => setForm({ ...form, autoriza_publicacao: value })}>Autorizo a publicação da empresa e do serviço nas pesquisas da Elo.</Check>{form.autoriza_publicacao && <><Check checked={form.publicar_telefone} setChecked={(value) => setForm({ ...form, publicar_telefone: value })}>Exibir o telefone comercial da empresa nas pesquisas.</Check><Check checked={form.publicar_email} setChecked={(value) => setForm({ ...form, publicar_email: value })}>Exibir o e-mail comercial da empresa nas pesquisas.</Check></>}</Group>
+        <Group title="Publicação"><Check checked={form.autoriza_publicacao} setChecked={(value) => setForm({ ...form, autoriza_publicacao: value })}>Autorizo a publicação da empresa e do serviço nas pesquisas da Elo.</Check>{form.autoriza_publicacao && <>{form.empresa_responsavel.trim() && <Check checked={form.publicar_responsavel} setChecked={(value) => setForm({ ...form, publicar_responsavel: value })}>Exibir o nome do responsável nas pesquisas da Elo.</Check>}<Check checked={form.publicar_telefone} setChecked={(value) => setForm({ ...form, publicar_telefone: value })}>Exibir o telefone comercial da empresa nas pesquisas.</Check><Check checked={form.publicar_email} setChecked={(value) => setForm({ ...form, publicar_email: value })}>Exibir o e-mail comercial da empresa nas pesquisas.</Check></>}</Group>
         <Check checked={form.aceita_termos} setChecked={(value) => setForm({ ...form, aceita_termos: value })}>Li e aceito os <Link to="/terms" target="_blank" className="font-black underline">Termos de Uso</Link> e a <Link to="/privacy" target="_blank" className="font-black underline">Política de Privacidade</Link>.</Check>
         <Submit loading={loading}>{authenticated ? "Salvar alterações" : "Salvar e continuar"}</Submit>
       </form>}

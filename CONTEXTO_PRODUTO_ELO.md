@@ -144,6 +144,7 @@ Os dados são separados em duas entidades. O cadastro privado da pessoa deve com
 A ficha pública da empresa deve comportar:
 
 - nome da empresa ou negócio;
+- nome opcional do responsável público, publicado somente mediante autorização específica;
 - descrição do negócio;
 - problemas que resolve e serviços oferecidos;
 - telefone e e-mail exclusivamente quando autorizados para publicação;

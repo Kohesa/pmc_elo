@@ -30,7 +30,7 @@ O schema `private` mantém:
 
 - `cadastro`: identidade privada, dados pessoais progressivos, vínculo único com `auth.users` e estados `em_andamento`, `aprovado`, `inativo` ou `bloqueado`;
 - `cadastro_auditoria`: trilha sanitizada de criação, edição e conclusão;
-- `empresas`: ficha comercial publicável, contatos públicos e links autorizados;
+- `empresas`: ficha comercial publicável, responsável público opcional, contatos públicos e links autorizados; cada dado pessoal publicável possui autorização própria;
 - `cadastro_servicos`: catálogo de serviços vinculado à empresa, com índice lexical e embedding próprios;
 - `conversas`: mensagens criptografadas, IDs externos, horários e status de entrega;
 - `conversas_contexto_ia`: memória curta e contexto ativo do RAG;
