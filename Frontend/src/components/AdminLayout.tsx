@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Database, LogOut, Users } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import EloAnimatedBackground from "./EloAnimatedBackground";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
@@ -13,12 +14,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="admin-portal">
+      <EloAnimatedBackground />
       <header className="admin-portal__header">
         <div className="admin-portal__header-inner">
-          <NavLink className="connect-brand admin-portal__brand" to="/" aria-label="Connect — Ministério de Empreendedores">
+          <NavLink className="connect-brand admin-portal__brand" to="/" aria-label="Connect — Conectando pessoas, fé e propósitos">
             <span className="connect-brand__wordmark">CONNECT</span>
             <img className="connect-brand__symbol" src="/elo-landing/4a63e.png" alt="" />
-            <span className="connect-brand__subtitle">MINISTÉRIO DE EMPREENDEDORES</span>
+            <span className="connect-brand__subtitle">CONECTANDO PESSOAS, FÉ E PROPÓSITOS</span>
           </NavLink>
           <div className="admin-portal__context"><span>Operação interna</span><strong>Administração</strong></div>
           <nav className="admin-portal__nav" aria-label="Administração da Elo">

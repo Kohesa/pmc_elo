@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import EloAnimatedBackground from "../components/EloAnimatedBackground";
 
 const steps = [
   {
@@ -34,19 +35,13 @@ export default function Landing() {
 
   return (
     <main className="elo-landing">
-      <img
-        className="elo-landing__emblem"
-        src="/elo-landing/4a63e.png"
-        alt=""
-        aria-hidden="true"
-      />
-      <div className="elo-landing__light" aria-hidden="true" />
+      <EloAnimatedBackground />
 
       <header className="elo-landing__header">
-        <Link className="connect-brand" to="/" aria-label="Connect — Ministério de Empreendedores">
+        <Link className="connect-brand" to="/" aria-label="Connect — Conectando pessoas, fé e propósitos">
           <span className="connect-brand__wordmark">CONNECT</span>
           <img className="connect-brand__symbol" src="/elo-landing/4a63e.png" alt="" />
-          <span className="connect-brand__subtitle">MINISTÉRIO DE EMPREENDEDORES</span>
+          <span className="connect-brand__subtitle">CONECTANDO PESSOAS, FÉ E PROPÓSITOS</span>
         </Link>
 
         <nav className="elo-landing__nav" aria-label="Acesso">
@@ -81,7 +76,7 @@ export default function Landing() {
       </section>
 
       <footer className="elo-landing__footer">
-        <span>CONNECT · MINISTÉRIO DE EMPREENDEDORES</span>
+        <span>CONNECT · CONECTANDO PESSOAS, FÉ E PROPÓSITOS</span>
         <nav aria-label="Links institucionais">
           <Link to="/terms">Termos</Link>
           <Link to="/privacy">Privacidade</Link>

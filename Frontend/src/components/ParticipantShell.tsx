@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import EloAnimatedBackground from "./EloAnimatedBackground";
 
 export default function ParticipantShell({
   title,
@@ -16,14 +17,13 @@ export default function ParticipantShell({
 }) {
   return (
     <main className="participant-portal">
-      <img className="participant-portal__emblem" src="/elo-landing/4a63e.png" alt="" aria-hidden="true" />
-      <div className="participant-portal__light" aria-hidden="true" />
+      <EloAnimatedBackground />
 
       <header className="participant-portal__header">
-        <Link className="connect-brand participant-brand" to="/" aria-label="Connect — Ministério de Empreendedores">
+        <Link className="connect-brand participant-brand" to="/" aria-label="Connect — Conectando pessoas, fé e propósitos">
           <span className="connect-brand__wordmark">CONNECT</span>
           <img className="connect-brand__symbol" src="/elo-landing/4a63e.png" alt="" />
-          <span className="connect-brand__subtitle">MINISTÉRIO DE EMPREENDEDORES</span>
+          <span className="connect-brand__subtitle">CONECTANDO PESSOAS, FÉ E PROPÓSITOS</span>
         </Link>
         <Link to="/" className="participant-portal__back">← {backLabel}</Link>
       </header>

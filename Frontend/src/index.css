@@ -15,7 +15,7 @@ button, input, select, textarea { font: inherit; }
   min-height: 100dvh;
   flex-direction: column;
   overflow: hidden;
-  background: #040c1b url("/elo-landing/22a0b.svg") center top / 100% 100% no-repeat;
+  background: #020815;
   color: var(--elo-text);
 }
 
@@ -38,24 +38,91 @@ body.elo-landing-active {
   outline-offset: 5px;
 }
 
-.elo-landing__emblem {
-  position: absolute;
-  z-index: -2;
-  top: -18px;
-  left: 30.625%;
-  width: min(90vw, 1295px);
-  max-width: none;
+.elo-animated-background {
+  position: fixed;
+  z-index: -3;
+  inset: 0;
+  overflow: hidden;
   pointer-events: none;
-  opacity: 0.15;
 }
 
-.elo-landing__light {
+.elo-animated-background__art {
   position: absolute;
-  z-index: -1;
+  z-index: 0;
+  inset: 0;
+  background: #020815;
+}
+
+.elo-animated-background__art::before {
+  position: absolute;
+  inset: 0;
+  background: url("/elo-landing/connect-tech-background-clean.png") center / 108% 100% no-repeat;
+  content: "";
+  filter: brightness(1.92) saturate(2.05) hue-rotate(-5deg);
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);
+  -webkit-mask-position: top;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 0%;
+  mask-image: linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);
+  mask-position: top;
+  mask-repeat: no-repeat;
+  mask-size: 100% 0%;
+  animation: elo-side-rays 6.8s cubic-bezier(0.42, 0, 0.18, 1) infinite;
+  will-change: filter, opacity, mask-size;
+}
+
+.elo-animated-background::after {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 40%, transparent 0%, rgb(2 8 21 / 4%) 68%, rgb(2 8 21 / 12%) 100%),
+    linear-gradient(180deg, transparent 0%, rgb(2 8 21 / 3%) 58%, rgb(2 8 21 / 10%) 100%);
+  content: "";
+}
+
+@keyframes elo-side-rays {
+  0% {
+    -webkit-mask-size: 100% 0%;
+    mask-size: 100% 0%;
+    filter: brightness(1.65) saturate(1.8) hue-rotate(-8deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.42;
+  }
+  68% {
+    -webkit-mask-size: 100% 118%;
+    mask-size: 100% 118%;
+    filter: brightness(2.12) saturate(2.22) hue-rotate(5deg);
+    opacity: 0.92;
+  }
+  79% {
+    -webkit-mask-size: 100% 118%;
+    mask-size: 100% 118%;
+    filter: brightness(2) saturate(2.08) hue-rotate(1deg);
+    opacity: 0.84;
+  }
+  96%,
+  100% {
+    -webkit-mask-size: 100% 118%;
+    mask-size: 100% 118%;
+    filter: brightness(1.72) saturate(1.86) hue-rotate(-4deg);
+    opacity: 0;
+  }
+}
+
+.elo-animated-background__light {
+  position: absolute;
+  z-index: 1;
   inset: -40px 4.86% auto;
   height: 800px;
   pointer-events: none;
   background: url("/elo-landing/2db94.svg") center / 100% 100% no-repeat;
+  opacity: 0.32;
 }
 
 .elo-landing__header {
@@ -96,10 +163,11 @@ body.elo-landing-active {
 .connect-brand__subtitle {
   grid-column: 1 / -1;
   align-self: start;
-  color: #6e90ff;
-  font-size: 11px;
+  color: #ffffff;
+  font-size: 8.5px;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.045em;
+  white-space: nowrap;
 }
 
 .elo-landing__nav {
@@ -466,7 +534,8 @@ body.elo-landing-active {
   }
 
   .connect-brand__subtitle {
-    font-size: 7.5px;
+    font-size: 5.7px;
+    letter-spacing: 0.025em;
   }
 
   .elo-landing__nav {
@@ -496,13 +565,17 @@ body.elo-landing-active {
     font-size: clamp(29px, 8vw, 43px);
   }
 
-  .elo-landing__emblem {
-    top: 120px;
-    left: -20%;
-    width: 950px;
+  .elo-animated-background {
+    inset: 0;
   }
 
-  .elo-landing__light {
+  .elo-animated-background__art {
+    inset: 0;
+    background-position: center;
+    background-size: 100% 100%;
+  }
+
+  .elo-animated-background__light {
     height: 700px;
   }
 
@@ -584,7 +657,9 @@ body.elo-landing-active {
   }
 
   .connect-brand__subtitle {
-    display: none;
+    display: block;
+    font-size: 5px;
+    letter-spacing: 0;
   }
 
   .elo-landing__nav {
@@ -607,9 +682,26 @@ body.elo-landing-active {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .elo-animated-background__art {
+    animation: none;
+    filter: none;
+    transition: none;
+  }
+
+  .elo-animated-background__art::before {
+    animation: none;
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    filter: brightness(1.62) saturate(1.8);
+    opacity: 0.38;
+    transition: none;
+  }
+
   .elo-landing *,
   .elo-landing *::before,
   .elo-landing *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
@@ -617,29 +709,22 @@ body.elo-landing-active {
 
 /* Superfícies institucionais e administrativas com a identidade Connect. */
 .admin-portal {
+  position: relative;
+  isolation: isolate;
   min-height: 100vh;
-  background: #f4f7fc;
+  overflow: hidden;
+  background: #020815;
   color: #10203e;
 }
 
 .admin-portal__header {
   position: relative;
+  z-index: 1;
   overflow: hidden;
   border-bottom: 1px solid #1e3d75;
-  background: #061126 url("/elo-landing/22a0b.svg") center / cover no-repeat;
+  background: rgb(6 17 38 / 86%);
+  backdrop-filter: blur(12px);
   box-shadow: 0 8px 30px rgb(5 15 36 / 16%);
-}
-
-.admin-portal__header::after {
-  position: absolute;
-  top: -170px;
-  right: -110px;
-  width: 520px;
-  height: 520px;
-  background: url("/elo-landing/4a63e.png") center / contain no-repeat;
-  content: "";
-  opacity: 0.08;
-  pointer-events: none;
 }
 
 .admin-portal__header-inner {
@@ -726,9 +811,16 @@ body.elo-landing-active {
 }
 
 .admin-portal__main {
+  position: relative;
+  z-index: 1;
   width: min(calc(100% - 40px), 1280px);
-  margin: 0 auto;
-  padding: 30px 0 72px;
+  margin: 30px auto 60px;
+  padding: 30px 24px 72px;
+  border: 1px solid rgb(116 153 232 / 18%);
+  border-radius: 24px;
+  background: rgb(244 247 252 / 96%);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 24px 70px rgb(0 7 24 / 32%);
 }
 
 .admin-portal .text-emerald-700,
@@ -900,29 +992,8 @@ body.elo-landing-active {
   isolation: isolate;
   min-height: 100vh;
   overflow: hidden;
-  background: #040c1b url("/elo-landing/22a0b.svg") center top / cover no-repeat;
+  background: #020815;
   color: #10203e;
-}
-
-.participant-portal__emblem {
-  position: fixed;
-  z-index: -2;
-  top: -120px;
-  left: 48%;
-  width: min(82vw, 1080px);
-  max-width: none;
-  pointer-events: none;
-  opacity: 0.12;
-}
-
-.participant-portal__light {
-  position: fixed;
-  z-index: -1;
-  inset: -180px 0 auto;
-  height: 760px;
-  pointer-events: none;
-  background: url("/elo-landing/2db94.svg") center / 100% 100% no-repeat;
-  opacity: 0.72;
 }
 
 .participant-portal__header {
@@ -964,6 +1035,8 @@ body.elo-landing-active {
 }
 
 .participant-portal__content {
+  position: relative;
+  z-index: 1;
   width: min(100%, 880px);
   margin: 0 auto;
   padding: 48px 24px 72px;
